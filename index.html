@@ -17,17 +17,23 @@
     .grain { opacity:.08; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.88' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E"); mix-blend-mode:screen; }
     .scanlines { opacity:.14; background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(0,0,0,.25) 4px); }
     .vignette { background:radial-gradient(ellipse at center,transparent 42%,rgba(0,0,0,.62) 100%); }
-    .topbar { position:absolute; top:0; left:0; right:0; display:flex; justify-content:space-between; align-items:flex-start; padding:clamp(18px,3vw,36px) clamp(18px,4vw,56px); pointer-events:none; text-shadow:0 1px 18px #000; }
+    .topbar { position:absolute; top:0; left:0; right:0; z-index:12; display:flex; justify-content:space-between; align-items:flex-start; padding:clamp(18px,3vw,36px) clamp(18px,4vw,56px); pointer-events:none; text-shadow:0 1px 18px #000; }
     .brand { display:flex; gap:14px; align-items:center; letter-spacing:.18em; font-size:12px; font-weight:750; }
     .brand-mark { display:grid; place-items:center; width:30px; height:30px; border:1px solid rgba(138,245,228,.6); color:var(--cyan); transform:rotate(45deg); font-size:12px; }
     .brand-mark span { transform:rotate(-45deg); }
     .brand small { display:block; margin-top:5px; color:#8c9496; font-size:9px; font-weight:500; letter-spacing:.32em; }
     .build { text-align:right; color:#9a9da1; font:10px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace; letter-spacing:.12em; }
+    #fps { margin-left:8px; color:var(--cyan); }
+    .audio-toggle,.fullscreen-toggle { margin-top:7px; padding:4px 7px; border:1px solid rgba(138,245,228,.3); background:rgba(5,12,14,.48); color:#c8dfd9; font:9px ui-monospace,monospace; letter-spacing:.08em; cursor:pointer; pointer-events:auto; }
+    .fullscreen-toggle { margin-left:5px; font-size:12px; }
     .hud { position:absolute; left:clamp(18px,4vw,56px); bottom:clamp(24px,5vh,58px); display:flex; gap:28px; align-items:end; pointer-events:none; transition:opacity .35s; }
     .hud-block { min-width:88px; border-left:1px solid rgba(138,245,228,.5); padding-left:11px; }
     .hud-label { color:#95999c; font-size:9px; letter-spacing:.22em; text-transform:uppercase; }
     .hud-value { margin-top:5px; color:#eef3ee; font:19px/1 ui-monospace,SFMono-Regular,Consolas,monospace; letter-spacing:.03em; }
     .hud-value em { color:var(--cyan); font-style:normal; }
+    .status-value { color:#ff9aa8; letter-spacing:.08em; }
+    .stamina-track { width:80px; height:3px; margin-top:7px; background:rgba(255,255,255,.17); }
+    .stamina-track i { display:block; width:100%; height:100%; background:var(--cyan); transition:width .15s; }
     .objective { position:absolute; right:clamp(18px,4vw,56px); bottom:clamp(24px,5vh,58px); width:min(245px,40vw); text-align:right; pointer-events:none; }
     .objective .hud-label { color:var(--cyan); }
     .objective p { margin:8px 0 0; color:#d4d4d0; font-size:12px; line-height:1.65; text-shadow:0 2px 10px #000; }
@@ -41,9 +47,32 @@
     .crosshair.hot { transform:translate(-50%,-50%) scale(1.55); }
     .hint { position:absolute; left:50%; top:calc(50% + 32px); transform:translateX(-50%); padding:7px 11px; background:rgba(7,10,12,.72); border:1px solid rgba(138,245,228,.34); color:#d5e7e2; font-size:10px; letter-spacing:.09em; opacity:0; transition:opacity .2s; pointer-events:none; white-space:nowrap; }
     .hint.show { opacity:1; }
-    .toast { position:absolute; top:21%; left:50%; transform:translate(-50%,-8px); padding:11px 16px; color:#d9fff7; border-top:1px solid rgba(138,245,228,.65); border-bottom:1px solid rgba(138,245,228,.25); background:rgba(7,13,15,.7); letter-spacing:.13em; font:10px ui-monospace,SFMono-Regular,Consolas,monospace; opacity:0; transition:opacity .3s,transform .3s; pointer-events:none; white-space:nowrap; }
+    .toast { position:absolute; top:21%; left:50%; transform:translate(-50%,-8px); max-width:min(540px,90vw); padding:11px 16px; color:#d9fff7; border-top:1px solid rgba(138,245,228,.65); border-bottom:1px solid rgba(138,245,228,.25); background:rgba(7,13,15,.7); text-align:center; letter-spacing:.13em; font:10px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace; opacity:0; transition:opacity .3s,transform .3s; pointer-events:none; white-space:normal; }
     .toast.show { opacity:1; transform:translate(-50%,0); }
-    .screen { position:absolute; inset:0; display:grid; place-items:center; padding:22px; background:linear-gradient(90deg,rgba(4,7,9,.6),rgba(4,7,9,.16) 50%,rgba(4,7,9,.55)); transition:opacity .45s,visibility .45s; }
+    .entity-alert { position:absolute; top:15%; left:50%; transform:translateX(-50%); color:#ff8797; font:10px ui-monospace,monospace; letter-spacing:.24em; opacity:0; text-shadow:0 0 15px #ff163f; pointer-events:none; transition:opacity .25s; }
+    .entity-alert.show { opacity:1; }
+    .damage-flash { position:absolute; inset:0; z-index:5; opacity:0; pointer-events:none; background:radial-gradient(ellipse at center,transparent 28%,rgba(255,29,55,.48) 100%); transition:opacity .15s; }
+    #game.damaged .damage-flash { opacity:1; }
+    .touch-layer { position:absolute; inset:0; z-index:6; display:none; touch-action:none; user-select:none; }
+    #game.touch-mode .touch-layer { display:block; }
+    .look-pad { position:absolute; left:46%; right:0; top:18%; bottom:0; touch-action:none; }
+    .move-pad { position:absolute; left:22px; bottom:22px; width:124px; height:124px; display:grid; place-items:center; border:1px solid rgba(138,245,228,.26); border-radius:50%; background:rgba(5,12,14,.34); color:rgba(209,244,236,.48); font:9px ui-monospace,monospace; letter-spacing:.18em; touch-action:none; }
+    .move-caption { position:absolute; bottom:22px; }
+    .move-stick { position:absolute; left:50%; top:50%; width:46px; height:46px; transform:translate(-50%,-50%); border:1px solid rgba(138,245,228,.63); border-radius:50%; background:rgba(138,245,228,.2); box-shadow:0 0 18px rgba(75,234,208,.13); pointer-events:none; }
+    .touch-actions { position:absolute; right:20px; bottom:22px; display:grid; grid-template-columns:repeat(2,54px); gap:9px; }
+    .touch-actions button { width:54px; height:54px; border:1px solid rgba(138,245,228,.36); border-radius:50%; background:rgba(5,12,14,.62); color:#d9fff7; font:9px ui-monospace,monospace; letter-spacing:.06em; touch-action:none; }
+    .touch-actions button:active,.touch-actions button.active { background:rgba(138,245,228,.25); border-color:rgba(138,245,228,.8); }
+    .touch-help { display:none; color:#7d8c8a; font-size:10px; margin-top:8px; }
+    #game.touch-mode .screen { z-index:20; }
+    #game.touch-mode .topbar { z-index:22; }
+    #game.touch-mode .hud { top:70px; bottom:auto; left:18px; right:18px; justify-content:space-between; gap:7px; }
+    #game.touch-mode .hud-block { min-width:0; padding-left:7px; }
+    #game.touch-mode .hud-value { font-size:14px; }
+    #game.touch-mode .stamina-track { width:55px; }
+    #game.touch-mode .objective { top:122px; bottom:auto; right:18px; width:55vw; }
+    #game.touch-mode .touch-help { display:block; }
+    #game.touch-mode .grain { display:none; }
+    .screen { position:absolute; inset:0; z-index:10; display:grid; place-items:center; padding:22px; background:linear-gradient(90deg,rgba(4,7,9,.6),rgba(4,7,9,.16) 50%,rgba(4,7,9,.55)); transition:opacity .45s,visibility .45s; }
     .screen.hidden { opacity:0; visibility:hidden; pointer-events:none; }
     .panel { width:min(580px,100%); padding:clamp(26px,5vw,50px); background:linear-gradient(135deg,rgba(12,18,22,.92),rgba(7,10,13,.83)); border:1px solid rgba(206,238,228,.17); box-shadow:0 28px 90px rgba(0,0,0,.45); position:relative; overflow:hidden; }
     .panel:before { content:""; position:absolute; top:0; left:0; width:100%; height:1px; background:linear-gradient(90deg,transparent,var(--cyan),transparent); opacity:.65; }
@@ -62,7 +91,7 @@
     .corner.tl { left:0; top:0; border-left:1px solid; border-top:1px solid; }
     .corner.br { right:0; bottom:0; border-right:1px solid; border-bottom:1px solid; }
     .error { position:absolute; inset:auto 20px 20px; display:none; margin:auto; width:min(540px,calc(100% - 40px)); padding:15px 18px; color:#ffd1d4; background:rgba(63,18,24,.9); border:1px solid rgba(250,123,145,.4); font-size:12px; line-height:1.6; }
-    @media(max-width:600px) { .topbar { padding:18px; } .build { font-size:8px; } .hud { left:18px; bottom:22px; gap:13px; } .hud-block { min-width:67px; padding-left:8px; } .hud-value { font-size:16px; } .objective { right:18px; bottom:22px; width:38vw; } .objective p { font-size:10px; } .controls { grid-template-columns:1fr; gap:9px; } .panel { padding:27px 23px; } }
+    @media(max-width:600px) { .topbar { padding:18px; } .build { font-size:8px; } .hud { left:18px; bottom:22px; gap:13px; } .hud-block { min-width:67px; padding-left:8px; } .hud-value { font-size:16px; } .objective { right:18px; bottom:22px; width:38vw; } .objective p { font-size:10px; } .controls { grid-template-columns:1fr; gap:9px; } .panel { padding:27px 23px; } .touch-actions { right:14px; bottom:18px; } .move-pad { left:14px; bottom:18px; } .audio-toggle { padding:4px 5px; font-size:8px; } }
   </style>
   <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
 </head>
@@ -70,24 +99,31 @@
   <main id="game" aria-label="REALITY.exe 게임 화면">
     <div class="topbar">
       <div class="brand"><div class="brand-mark"><span>R</span></div><div>REALITY.exe<small>ANOMALY RESEARCH UNIT</small></div></div>
-      <div class="build">FIELD RECORD&nbsp; / &nbsp;07<br><span id="connection">SIGNAL: UNSTABLE</span></div>
+      <div class="build">FIELD RECORD&nbsp; / &nbsp;07<br><span id="connection">SIGNAL: UNSTABLE</span><span id="fps">FPS: --</span><br><button class="audio-toggle" id="musicToggle" aria-pressed="true">♪ AMBIENT ON</button><button class="fullscreen-toggle" id="fullscreenToggle" aria-label="전체 화면">⛶</button></div>
     </div>
     <div class="hud" id="hud">
       <div class="hud-block"><div class="hud-label">기록 조각</div><div class="hud-value"><em id="count">00</em><span style="color:#656d70"> / 05</span></div></div>
       <div class="hud-block"><div class="hud-label">복도 깊이</div><div class="hud-value" id="depth">000 m</div></div>
       <div class="hud-block"><div class="hud-label">중력</div><div class="hud-value" id="gravity">↓ <span style="font-size:10px;color:#929a9b">FLOOR</span></div></div>
+      <div class="hud-block"><div class="hud-label">생존 / 체력</div><div class="hud-value status-value" id="health">♥ ♥ ♥</div><div class="stamina-track"><i id="staminaBar"></i></div></div>
     </div>
-    <div class="objective"><div class="hud-label">임무 / RECOVER</div><p id="objectiveText">복도에 남은 기록 조각 5개를 모으세요.</p><div class="progress" id="progress"><i></i><i></i><i></i><i></i><i></i></div></div>
-    <div class="crosshair" id="crosshair"></div><div class="hint" id="hint">[ E ] 기록 조각 회수</div><div class="toast" id="toast"></div>
-    <div class="grain"></div><div class="scanlines"></div><div class="vignette"></div>
+    <div class="objective"><div class="hud-label" id="missionLabel">임무 01 / 신호 복구</div><p id="objectiveText">신호 중계기 3개를 작동시키세요.</p><div class="progress" id="progress"><i></i><i></i><i></i><i></i><i></i></div></div>
+    <div class="crosshair" id="crosshair"></div><div class="hint" id="hint">[ E ] 상호작용</div><div class="toast" id="toast"></div><div class="entity-alert" id="entityAlert">관측자 접근 중</div>
+    <div class="touch-layer" id="touchLayer">
+      <div class="look-pad" id="lookPad" aria-label="화면을 드래그해 둘러보기"></div>
+      <div class="move-pad" id="movePad" aria-label="이동 조이스틱"><span class="move-caption">MOVE</span><span class="move-stick" id="moveStick"></span></div>
+      <div class="touch-actions"><button id="jumpTouch" aria-label="점프">JUMP</button><button id="gravityTouch" aria-label="중력 반전">GRAV</button><button id="interactTouch" aria-label="상호작용">USE</button><button id="runTouch" aria-label="달리기">RUN</button><button id="pauseTouch" aria-label="일시정지">PAUSE</button></div>
+    </div>
+    <div class="grain"></div><div class="scanlines"></div><div class="vignette"></div><div class="damage-flash"></div>
     <section class="screen" id="screen">
       <div class="panel">
         <i class="corner tl"></i><i class="corner br"></i>
         <div class="eyebrow" id="screenEyebrow">EXPLORATION PROTOCOL&nbsp; 01</div>
         <h1 id="screenTitle">REALITY<span>.exe</span></h1>
         <div class="subtitle" id="screenSubtitle">복도 07 — 중력이 기억을 잃은 곳</div>
-        <p class="story" id="screenStory">끝이 보이지 않는 복도에서 사라진 기록 조각을 회수하세요. 벽 너머에서 시선이 느껴진다면, 이미 무언가가 당신을 발견한 뒤입니다.</p>
-        <div class="controls" id="controls"><div><strong>W A S D</strong>이동</div><div><strong>MOUSE</strong>둘러보기</div><div><strong>SPACE</strong>점프</div><div><strong>G</strong>중력 반전</div><div><strong>E</strong>조각 회수 / 출구</div><div><strong>ESC</strong>일시정지</div></div>
+        <p class="story" id="screenStory">깊은 복도에서 중계기를 복구하고 기억 조각을 회수하세요. 신호가 켜지는 순간, 복도 뒤편의 무언가도 깨어납니다.</p>
+        <div class="controls" id="controls"><div><strong>W A S D</strong>이동</div><div><strong>MOUSE</strong>둘러보기</div><div><strong>SHIFT</strong>달리기</div><div><strong>SPACE</strong>점프</div><div><strong>G</strong>중력 반전 / 추격자 밀치기</div><div><strong>E</strong>사용 / 회수 / 출구</div><div><strong>ESC</strong>일시정지</div></div>
+        <div class="touch-help">왼쪽 패드 이동 · 오른쪽 드래그로 시점 조작 · RUN을 누른 채 이동하면 달립니다.</div>
         <button class="start" id="start"><span>탐사 시작</span><span>↗</span></button>
         <div class="footnote" id="footnote">권장: 헤드폰 착용&nbsp; / &nbsp;화면을 클릭하면 포인터가 잠깁니다</div>
       </div>
@@ -99,12 +135,14 @@
 
     const $ = (id) => document.getElementById(id);
     const root = $('game');
+    const touchMode = matchMedia('(pointer: coarse)').matches || (navigator.maxTouchPoints > 0 && 'ontouchstart' in window);
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x101719);
-    scene.fog = new THREE.FogExp2(0x101719, 0.019);
-    const camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, 0.08, 160);
-    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 1.8));
+    scene.fog = new THREE.FogExp2(0x101719, 0.022);
+    const camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, 0.1, 115);
+    const pixelRatioCap = Math.min(devicePixelRatio || 1, touchMode ? 1.1 : 1.35);
+    const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(pixelRatioCap);
     renderer.setSize(innerWidth, innerHeight);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -114,11 +152,8 @@
     const hemi = new THREE.HemisphereLight(0xb7d9d5, 0x211b20, 1.12);
     scene.add(hemi);
     const keyLight = new THREE.PointLight(0x9af5e1, 36, 30, 1.7);
-    keyLight.position.set(0, 4.5, -5);
-    scene.add(keyLight);
-    const farLight = new THREE.PointLight(0xff667d, 13, 22, 1.8);
-    farLight.position.set(0, 3.8, -20);
-    scene.add(farLight);
+    keyLight.position.set(0, .65, -2);
+    camera.add(keyLight);
 
     const mats = {
       floor: new THREE.MeshStandardMaterial({ color: 0x343c3d, roughness: .84, metalness: .16 }),
@@ -127,32 +162,139 @@
       trim: new THREE.MeshStandardMaterial({ color: 0x747974, roughness: .57, metalness: .35 }),
       dark: new THREE.MeshStandardMaterial({ color: 0x171c1d, roughness: .72, metalness: .2 }),
       light: new THREE.MeshStandardMaterial({ color: 0xa9fff0, emissive: 0x5df2d5, emissiveIntensity: 2.4 }),
+      redLight: new THREE.MeshStandardMaterial({ color:0xff9ba7, emissive:0xff3c5a, emissiveIntensity:2.3 }),
+      violetLight: new THREE.MeshStandardMaterial({ color:0xd0adff, emissive:0x824cff, emissiveIntensity:2.2 }),
+      amberLight: new THREE.MeshStandardMaterial({ color:0xffda8a, emissive:0xffa52f, emissiveIntensity:2.1 }),
       red: new THREE.MeshStandardMaterial({ color: 0x8e2937, emissive: 0x67101d, emissiveIntensity: .65, roughness: .42 }),
       anomaly: new THREE.MeshStandardMaterial({ color: 0x8fffea, emissive: 0x39f5dc, emissiveIntensity: 2.7, roughness: .18, metalness: .42 }),
+      entity: new THREE.MeshStandardMaterial({ color:0x090c12, roughness:.94, metalness:.04 }),
+      entityGlow: new THREE.MeshBasicMaterial({ color:0xff365c }),
+      relay: new THREE.MeshStandardMaterial({ color:0x5d827d, emissive:0x173b38, emissiveIntensity:.8, metalness:.5, roughness:.3 }),
       ghost: new THREE.MeshStandardMaterial({ color: 0x1e2530, emissive: 0x273d50, emissiveIntensity: .35, roughness: 1, transparent: true, opacity: .92 })
     };
+    const sharedMaterials = new Set(Object.values(mats));
     const boxGeo = new THREE.BoxGeometry(1, 1, 1);
     const roomRoot = new THREE.Group();
     scene.add(roomRoot);
+    const entityRoot = new THREE.Group(); entityRoot.visible = false; scene.add(entityRoot);
     const segments = new Map();
     const anomalies = [];
-    const SEG = 22, WIDTH = 10, HEIGHT = 6;
+    const relays = [];
+    const SEG = 22, WIDTH = 10, HEIGHT = 6, MAX_SEGMENT = 33;
     const player = { x: 0, y: 1.62, z: 0, yaw: 0, pitch: 0, vy: 0, gravity: -1, grounded: true, speed: 4.3 };
-    let maxSegment = 8, running = false, locked = false, gameOver = false, fragments = 0, exitPortal = null, exitIndex = null, toastTimer = 0;
+    const collectedMemoryIndices = new Set();
+    const activatedRelayIndices = new Set();
+    const relaySegments = [3, 7, 11];
+    const memorySegments = new Set([13, 15, 17, 19, 21, 23, 25, 27, 29, 31]);
+    const saveKey = 'reality-exe-field-record-07';
+    let savedProgress = null;
+    try {
+      const parsed = JSON.parse(localStorage.getItem(saveKey) || 'null');
+      if (parsed?.version === 1) {
+        savedProgress = parsed;
+        for (const index of parsed.relays || []) if (relaySegments.includes(index)) activatedRelayIndices.add(index);
+        for (const index of parsed.memories || []) if (memorySegments.has(index)) collectedMemoryIndices.add(index);
+        if (Number.isFinite(parsed.depth)) player.z = THREE.MathUtils.clamp(parsed.depth, -SEG * MAX_SEGMENT + 2, 0);
+      }
+    } catch { savedProgress = null; }
+    if (touchMode) { root.classList.add('touch-mode'); $('controls').style.display = 'none'; }
+    let running = false, locked = false, gameOver = false, fragments = collectedMemoryIndices.size, exitPortal = null, exitIndex = Number.isInteger(savedProgress?.exitIndex) ? savedProgress.exitIndex : null, toastTimer = 0;
+    let health = 3, stamina = 100, entityActive = false, entityStunnedUntil = 0, lastEntityHit = -Infinity, lastStaminaDisplay = -1, lastAlertAt = 0, safeHealTimer = 0;
     const keys = new Set();
-    let previous = performance.now();
+    let lastFrame = performance.now(), frameSampleTime = 0, frameSampleCount = 0, footstepTime = 0, wasSafeHall = false;
+    let displayedDepth = -1, proximityTime = 0, lastHint = '';
+    const touchInput = { forward: 0, strafe: 0, sprint: false };
+    let movePointer = null, lookPointer = null, lookX = 0, lookY = 0;
+    let audioContext = null, musicBus = null, sfxBus = null, musicTimer = 0, musicEnabled = true, musicNote = 0;
+    const ambientNotes = [110, 130.81, 146.83, 164.81, 196, 164.81, 146.83, 130.81, 98, 146.83, 174.61, 130.81];
 
     function seeded(n) { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
     function meshBox(parent, material, x, y, z, sx, sy, sz) {
       const m = new THREE.Mesh(boxGeo, material);
       m.position.set(x, y, z); m.scale.set(sx, sy, sz); parent.add(m); return m;
     }
-    function lamp(parent, x, y, z, color = 0x8af5e4, power = 11) {
-      const lightMaterial = color === 0xff7284 ? mats.red : mats.light;
-      const m = meshBox(parent, lightMaterial, x, y, z, .22, .07, 3.3);
-      if (color === 0xff7284) m.material = new THREE.MeshStandardMaterial({ color:0xff9ba7, emissive:0xff3c5a, emissiveIntensity:2.3 });
-      const p = new THREE.PointLight(color, power, 10, 2); p.position.set(x, y - .3, z); parent.add(p);
+    function addInstancedBoxes(parent, material, boxes) {
+      if (!boxes.length) return;
+      const mesh = new THREE.InstancedMesh(boxGeo, material, boxes.length);
+      const transform = new THREE.Object3D();
+      boxes.forEach((box, index) => {
+        transform.position.set(box.x, box.y, box.z);
+        transform.scale.set(box.sx, box.sy, box.sz);
+        transform.updateMatrix();
+        mesh.setMatrixAt(index, transform.matrix);
+      });
+      mesh.instanceMatrix.needsUpdate = true;
+      parent.add(mesh);
     }
+    function bootAudio() {
+      if (audioContext) { if (audioContext.state === 'suspended') audioContext.resume(); return; }
+      const AudioContextType = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextType) { $('musicToggle').textContent = '♪ AUDIO N/A'; return; }
+      try {
+        audioContext = new AudioContextType();
+        musicBus = audioContext.createGain(); musicBus.gain.value = musicEnabled ? .2 : .0001; musicBus.connect(audioContext.destination);
+        const echo = audioContext.createDelay(1.4), echoGain = audioContext.createGain();
+        echo.delayTime.value = .82; echoGain.gain.value = .16; musicBus.connect(echo); echo.connect(echoGain); echoGain.connect(audioContext.destination);
+        sfxBus = audioContext.createGain(); sfxBus.gain.value = .55; sfxBus.connect(audioContext.destination);
+        const lowpass = audioContext.createBiquadFilter(); lowpass.type = 'lowpass'; lowpass.frequency.value = 580;
+        const droneGain = audioContext.createGain(); droneGain.gain.value = .2; lowpass.connect(droneGain); droneGain.connect(musicBus);
+        for (const [frequency, detune] of [[55, -4], [55, 4], [82.41, 0]]) {
+          const oscillator = audioContext.createOscillator(); oscillator.type = 'sine'; oscillator.frequency.value = frequency; oscillator.detune.value = detune; oscillator.connect(lowpass); oscillator.start();
+        }
+        if (musicEnabled) scheduleMusicNote();
+        audioContext.resume();
+      } catch (error) { console.warn('Audio could not start:', error); }
+    }
+    function scheduleMusicNote() {
+      clearTimeout(musicTimer);
+      if (!audioContext || !musicEnabled) return;
+      const now = audioContext.currentTime;
+      const sector = Math.floor(Math.max(0, -player.z) / (SEG * 8)) % 4;
+      const transpose = [0, 2, -2, 4][sector];
+      const frequency = ambientNotes[musicNote % ambientNotes.length] * Math.pow(2, transpose / 12); musicNote++;
+      const oscillator = audioContext.createOscillator(), envelope = audioContext.createGain();
+      oscillator.type = 'sine'; oscillator.frequency.value = frequency;
+      envelope.gain.setValueAtTime(.0001, now); envelope.gain.exponentialRampToValueAtTime(.075, now + .65); envelope.gain.exponentialRampToValueAtTime(.0001, now + 3.6);
+      oscillator.connect(envelope); envelope.connect(musicBus); oscillator.start(now); oscillator.stop(now + 3.7);
+      musicTimer = setTimeout(scheduleMusicNote, 2300);
+    }
+    function soundEffect(kind) {
+      if (!audioContext || !sfxBus) return;
+      const now = audioContext.currentTime;
+      const patterns = { relay:[330, 494, 660], pickup:[440, 587, 880], gravity:[220, 110], jump:[180], hit:[92, 62], alert:[196, 146], footstep:[72] };
+      const pattern = patterns[kind] || [220];
+      pattern.forEach((frequency, index) => {
+        const oscillator = audioContext.createOscillator(), envelope = audioContext.createGain(), start = now + index * .09;
+        oscillator.type = kind === 'hit' ? 'sawtooth' : 'triangle'; oscillator.frequency.setValueAtTime(frequency, start);
+        if (kind === 'gravity') oscillator.frequency.exponentialRampToValueAtTime(frequency * .58, start + .24);
+        const volume = kind === 'hit' ? .16 : kind === 'footstep' ? .018 : .075;
+        envelope.gain.setValueAtTime(.0001, start); envelope.gain.exponentialRampToValueAtTime(volume, start + .018); envelope.gain.exponentialRampToValueAtTime(.0001, start + (kind === 'footstep' ? .09 : .28));
+        oscillator.connect(envelope); envelope.connect(sfxBus); oscillator.start(start); oscillator.stop(start + .3);
+      });
+    }
+    function saveProgress() {
+      try {
+        localStorage.setItem(saveKey, JSON.stringify({version:1, depth:player.z, relays:[...activatedRelayIndices], memories:[...collectedMemoryIndices], exitIndex}));
+      } catch { /* Storage can be unavailable in private browsing or file previews. */ }
+    }
+    $('musicToggle').addEventListener('click', () => {
+      musicEnabled = !musicEnabled; $('musicToggle').textContent = musicEnabled ? '♪ AMBIENT ON' : '♪ AMBIENT OFF'; $('musicToggle').setAttribute('aria-pressed', String(musicEnabled));
+      const wasInitialized = !!audioContext;
+      bootAudio();
+      if (musicBus && audioContext) {
+        musicBus.gain.cancelScheduledValues(audioContext.currentTime);
+        musicBus.gain.setTargetAtTime(musicEnabled ? .2 : .0001, audioContext.currentTime, .45);
+        if (musicEnabled && wasInitialized) scheduleMusicNote(); else if (!musicEnabled) clearTimeout(musicTimer);
+      }
+    });
+    $('fullscreenToggle').addEventListener('click', async () => {
+      try { if (!document.fullscreenElement) await root.requestFullscreen?.(); else await document.exitFullscreen?.(); } catch { showToast('전체 화면을 사용할 수 없습니다'); }
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (!audioContext) return;
+      if (document.hidden) { clearTimeout(musicTimer); audioContext.suspend(); }
+      else { audioContext.resume(); if (musicEnabled) scheduleMusicNote(); }
+    });
     function createAnomaly(index, parent, z) {
       const group = new THREE.Group();
       const x = (seeded(index + 4) - .5) * 4.1;
@@ -163,7 +305,6 @@
       group.add(ring);
       const core = new THREE.Mesh(new THREE.OctahedronGeometry(.38, 1), mats.anomaly);
       group.add(core);
-      const glow = new THREE.PointLight(0x67ffe8, 7, 6, 2); group.add(glow);
       const label = document.createElement('canvas'); label.width = 256; label.height = 64;
       const ctx = label.getContext('2d');
       ctx.fillStyle = '#cffff6'; ctx.font = 'bold 20px monospace'; ctx.textAlign = 'center'; ctx.fillText('MEMORY / ' + String(index).padStart(2, '0'), 128, 39);
@@ -171,9 +312,81 @@
       const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
       sprite.scale.set(2.5, .62, 1); sprite.position.y = 1.22; group.add(sprite);
       parent.add(group);
-      const record = { group, ring, core, collected: false, index, baseY: y };
+      const collected = collectedMemoryIndices.has(index);
+      group.visible = !collected;
+      const record = { group, ring, core, collected, index, baseY: y };
       anomalies.push(record);
       return record;
+    }
+    function createRelay(parent, index) {
+      const group = new THREE.Group(); group.position.set(index % 2 ? -2.8 : 2.8, 0, -SEG * .54); parent.add(group);
+      meshBox(group, mats.dark, 0, .72, 0, .72, 1.44, .58);
+      meshBox(group, mats.trim, 0, 1.43, -.04, .82, .12, .68);
+      meshBox(group, mats.relay, 0, 1.76, -.14, .46, .48, .12);
+      const core = new THREE.Mesh(new THREE.OctahedronGeometry(.2, 0), mats.amberLight); core.position.set(0, 2.12, -.08); group.add(core);
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(.37, .035, 6, 24), mats.amberLight); ring.position.set(0, 2.12, -.08); group.add(ring);
+      const record = { group, core, ring, index, activated:activatedRelayIndices.has(index) };
+      if (record.activated) { core.material = mats.light; ring.material = mats.light; }
+      relays.push(record);
+      return record;
+    }
+    function buildEntity() {
+      const robe = new THREE.Mesh(new THREE.ConeGeometry(.72, 2.2, 7), mats.entity); robe.position.y = 1.12; entityRoot.add(robe);
+      const torso = new THREE.Mesh(new THREE.BoxGeometry(.72, 1.15, .48), mats.entity); torso.position.set(0, 1.55, 0); entityRoot.add(torso);
+      const head = new THREE.Mesh(new THREE.SphereGeometry(.34, 8, 6), mats.entity); head.position.set(0, 2.28, .03); entityRoot.add(head);
+      for (const side of [-1, 1]) {
+        const eye = new THREE.Mesh(new THREE.SphereGeometry(.065, 6, 5), mats.entityGlow); eye.position.set(side * .13, 2.31, .32); entityRoot.add(eye);
+        const arm = new THREE.Mesh(new THREE.BoxGeometry(.16, 1.38, .17), mats.entity); arm.position.set(side * .48, 1.42, .05); arm.rotation.z = side * -.12; entityRoot.add(arm);
+      }
+      const lowerEye = new THREE.Mesh(new THREE.SphereGeometry(.035, 5, 4), mats.entityGlow); lowerEye.position.set(0, 1.94, .3); entityRoot.add(lowerEye);
+      entityRoot.scale.set(.95, 1, .7);
+    }
+    function activateEntity() {
+      if (entityActive) return;
+      entityActive = true; entityRoot.visible = true; entityRoot.position.set(0, 0, player.z + 42);
+      soundEffect('alert'); showToast('중계기 신호에 반응 — 관측자가 깨어났습니다');
+    }
+    function isSanctuarySegment(index) { return index > 0 && (index % 8 === 0 || index % 8 === 1); }
+    function updateEntity(dt, now) {
+      if (!entityActive || !running) return;
+      const segment = Math.max(0, Math.floor(-player.z / SEG));
+      const safeHall = isSanctuarySegment(segment);
+      if (safeHall) {
+        if (Math.abs(entityRoot.position.z - player.z) < 28) entityRoot.position.z = player.z + 28;
+        if (health < 3) {
+          safeHealTimer += dt;
+          if (safeHealTimer >= 8) { health++; safeHealTimer = 0; soundEffect('relay'); showToast('안정 구역에서 체력을 회복했습니다'); updateSurvivalHUD(); }
+        } else safeHealTimer = 0;
+      } else if (now >= entityStunnedUntil) {
+        safeHealTimer = 0;
+        entityRoot.position.z += THREE.MathUtils.clamp(player.z - entityRoot.position.z, -1, 1) * 5.1 * dt;
+      }
+      entityRoot.position.x += THREE.MathUtils.clamp(player.x - entityRoot.position.x, -1.7 * dt, 1.7 * dt);
+      entityRoot.position.y = Math.sin(now * .0021) * .12;
+      entityRoot.rotation.z = Math.sin(now * .0017) * .045;
+      const dx = entityRoot.position.x - player.x, dz = entityRoot.position.z - player.z;
+      const distance = Math.hypot(dx, dz);
+      if (distance > 90) entityRoot.position.z = player.z + 72;
+      if (!safeHall && distance < 25 && now - lastAlertAt > 6200) {
+        lastAlertAt = now; soundEffect('alert'); showToast('뒤에서 발소리가 가까워집니다');
+      }
+      $('entityAlert').classList.toggle('show', !safeHall && distance < 26);
+      if (!safeHall && distance < 2.45 && now - lastEntityHit > 2700) {
+        lastEntityHit = now; health--; stamina = Math.max(0, stamina - 25); soundEffect('hit');
+        root.classList.add('damaged'); setTimeout(() => root.classList.remove('damaged'), 180);
+        showToast(health > 0 ? '관측자에게 붙잡혔습니다 — 중력 반전으로 밀쳐내세요' : '관측자에게 붙잡혔습니다');
+        updateSurvivalHUD();
+        if (health <= 0) { loseGame(); return; }
+        entityRoot.position.z = player.z + 23;
+      }
+    }
+    function loseGame() {
+      gameOver = true; running = false; document.exitPointerLock?.();
+      $('screenEyebrow').textContent = 'SIGNAL TERMINATED';
+      $('screenTitle').innerHTML = 'YOU WERE <span>OBSERVED</span>';
+      $('screenSubtitle').textContent = '복도 07 — 생존 실패';
+      $('screenStory').textContent = '관측자는 신호가 끊긴 뒤에도 복도를 떠나지 않았습니다. 다시 탐사해 중계기부터 복구하세요.';
+      $('controls').style.display = 'none'; $('start').querySelector('span').textContent = '다시 탐사'; $('footnote').textContent = 'FIELD RECORD 07 / SIGNAL LOST'; $('screen').classList.remove('hidden');
     }
     function createExit(parent, z) {
       const group = new THREE.Group(); group.position.set(0, 0, z); parent.add(group);
@@ -183,33 +396,58 @@
       meshBox(group, frameMat, 1.25, 2.15, 0, .12, 4.3, .22);
       meshBox(group, frameMat, 0, 4.24, 0, 2.6, .12, .22);
       const plane = new THREE.Mesh(new THREE.PlaneGeometry(2.35, 4), portalMat); plane.position.set(0, 2.1, 0); group.add(plane);
-      const glow = new THREE.PointLight(0x6bffe4, 20, 14, 1.5); glow.position.set(0, 2.4, -1); group.add(glow);
       exitPortal = { group, z, plane };
       return exitPortal;
     }
     function createSegment(index) {
       if (segments.has(index)) return segments.get(index);
       const group = new THREE.Group(); group.position.z = -index * SEG; roomRoot.add(group);
-      const floor = new THREE.Mesh(new THREE.PlaneGeometry(WIDTH, SEG), mats.floor); floor.rotation.x = -Math.PI / 2; floor.position.set(0, 0, -SEG / 2); group.add(floor);
-      const ceil = new THREE.Mesh(new THREE.PlaneGeometry(WIDTH, SEG), mats.ceiling); ceil.rotation.x = Math.PI / 2; ceil.position.set(0, HEIGHT, -SEG / 2); group.add(ceil);
-      meshBox(group, mats.wall, -WIDTH/2, HEIGHT/2, -SEG/2, .35, HEIGHT, SEG);
-      meshBox(group, mats.wall, WIDTH/2, HEIGHT/2, -SEG/2, .35, HEIGHT, SEG);
-      // Repeating wall insets and floor seams make the corridor feel built, not flat.
+      const zoneIndex = Math.floor(Math.max(0,index) / 8), isWideHall = index > 0 && (index % 8 === 0 || index % 8 === 1);
+      const corridorWidth = isWideHall ? 18 : WIDTH, halfWidth = corridorWidth / 2;
+      const accent = [mats.light, mats.violetLight, mats.amberLight][zoneIndex % 3];
+      const floor = new THREE.Mesh(new THREE.PlaneGeometry(corridorWidth, SEG), mats.floor); floor.rotation.x = -Math.PI / 2; floor.position.set(0, 0, -SEG / 2); group.add(floor);
+      const ceil = new THREE.Mesh(new THREE.PlaneGeometry(corridorWidth, SEG), mats.ceiling); ceil.rotation.x = Math.PI / 2; ceil.position.set(0, HEIGHT, -SEG / 2); group.add(ceil);
+      meshBox(group, mats.wall, -halfWidth, HEIGHT/2, -SEG/2, .35, HEIGHT, SEG);
+      meshBox(group, mats.wall, halfWidth, HEIGHT/2, -SEG/2, .35, HEIGHT, SEG);
+      // Batch repeated corridor details into instanced meshes to keep draw calls low.
+      const trimBoxes = [], darkBoxes = [], coolLightBoxes = [], redLightBoxes = [], violetLightBoxes = [], amberLightBoxes = [];
+      const trimX = halfWidth - .23;
       for (const side of [-1, 1]) {
         for (let k = 0; k < 3; k++) {
           const z = -3 - k * 6.2;
-          meshBox(group, mats.trim, side * 4.77, 2.8, z, .08, 5.35, .09);
-          meshBox(group, mats.dark, side * 4.79, 2.7, z - 2.4, .08, 2.8, 1.15);
-          meshBox(group, mats.trim, side * 4.71, 2.7, z - 2.4, .09, 2.92, .06);
+          trimBoxes.push({ x:side*trimX, y:2.8, z, sx:.08, sy:5.35, sz:.09 });
+          darkBoxes.push({ x:side*(halfWidth-.21), y:2.7, z:z-2.4, sx:.08, sy:2.8, sz:1.15 });
+          trimBoxes.push({ x:side*(halfWidth-.29), y:2.7, z:z-2.4, sx:.09, sy:2.92, sz:.06 });
         }
       }
       for (let k = 0; k < 3; k++) {
         const z = -2.5 - k * 7;
-        lamp(group, -2.2, 5.76, z, index % 5 === 3 ? 0xff7284 : 0x8af5e4, 10);
-        lamp(group, 2.2, 5.76, z, index % 5 === 3 ? 0xff7284 : 0x8af5e4, 10);
-        meshBox(group, mats.trim, 0, .025, z, WIDTH - .45, .05, .045);
+        const lights = index % 5 === 3 ? redLightBoxes : accent === mats.violetLight ? violetLightBoxes : accent === mats.amberLight ? amberLightBoxes : coolLightBoxes;
+        const lightX = isWideHall ? 5.1 : 2.2;
+        lights.push({ x:-lightX, y:5.76, z, sx:.22, sy:.07, sz:3.3 });
+        lights.push({ x:lightX, y:5.76, z, sx:.22, sy:.07, sz:3.3 });
+        trimBoxes.push({ x:0, y:.025, z, sx:corridorWidth-.45, sy:.05, sz:.045 });
       }
-      // Occasional impossible detail: a door hanging in the air with its own light.
+      addInstancedBoxes(group, mats.trim, trimBoxes);
+      addInstancedBoxes(group, mats.dark, darkBoxes);
+      addInstancedBoxes(group, mats.light, coolLightBoxes);
+      addInstancedBoxes(group, mats.redLight, redLightBoxes);
+      addInstancedBoxes(group, mats.violetLight, violetLightBoxes);
+      addInstancedBoxes(group, mats.amberLight, amberLightBoxes);
+      if (index > 0 && index % 8 === 0) {
+        meshBox(group, accent, -halfWidth + .45, 3, -SEG * .52, .32, 6, .28);
+        meshBox(group, accent, halfWidth - .45, 3, -SEG * .52, .32, 6, .28);
+        meshBox(group, accent, 0, 5.8, -SEG * .52, corridorWidth - .7, .28, .3);
+        meshBox(group, mats.dark, 0, .04, -SEG * .52, corridorWidth - 1.2, .08, .5);
+        const sign = document.createElement('canvas'); sign.width = 512; sign.height = 96;
+        const signCtx = sign.getContext('2d'); signCtx.fillStyle = '#07100f'; signCtx.fillRect(0,0,512,96);
+        signCtx.strokeStyle = zoneIndex % 3 === 1 ? '#b89aff' : zoneIndex % 3 === 2 ? '#ffca75' : '#8af5e4'; signCtx.lineWidth = 2; signCtx.strokeRect(3,3,506,90);
+        signCtx.fillStyle = signCtx.strokeStyle; signCtx.font = 'bold 30px monospace'; signCtx.textAlign = 'center'; signCtx.fillText('SECTOR 0' + (zoneIndex + 1) + '  /  ' + ['THE NULL','THE STATIC','THE REDACTED'][zoneIndex % 3],256,59);
+        const signTexture = new THREE.CanvasTexture(sign);
+        const signSprite = new THREE.Sprite(new THREE.SpriteMaterial({map:signTexture, transparent:true, depthWrite:false}));
+        signSprite.scale.set(7.2,1.35,1); signSprite.position.set(0,4.8,-SEG*.52); group.add(signSprite);
+      }
+      // Occasional impossible detail: a door hanging in the air.
       if (index > 0 && index % 4 === 2) {
         const x = seeded(index + 83) > .5 ? 3.1 : -3.1;
         const door = new THREE.Group(); door.position.set(x, 1.8 + seeded(index + 5) * 1.3, -SEG * .64); group.add(door);
@@ -217,32 +455,66 @@
         meshBox(door, mats.trim, -.68, 0, 0, .12, 3.05, .22);
         meshBox(door, mats.trim, .68, 0, 0, .12, 3.05, .22);
         meshBox(door, mats.trim, 0, 1.48, 0, 1.45, .12, .22);
-        const knob = new THREE.PointLight(0xff415f, 3.5, 5, 2); knob.position.set(0, .1, .5); door.add(knob);
+        meshBox(door, mats.light, .35, -.1, .11, .06, .1, .08);
       }
       let anomaly = null;
-      if (index > 0 && index % 2 === 1 && seeded(index + 1) > .22) anomaly = createAnomaly(index, group, -SEG * .66);
-      const entry = { index, group, anomaly };
+      if (memorySegments.has(index)) anomaly = createAnomaly(index, group, -SEG * .66);
+      let relay = null;
+      if (relaySegments.includes(index)) relay = createRelay(group, index);
+      const entry = { index, group, anomaly, relay, isWideHall };
       segments.set(index, entry);
+      if (exitIndex === index && !exitPortal) createExit(group, -SEG * .68);
       return entry;
     }
-    for (let i = -2; i <= maxSegment; i++) createSegment(i);
+    for (let i = -2; i <= 6; i++) createSegment(i);
     camera.position.set(player.x, player.y, player.z);
     scene.add(camera);
+    buildEntity();
+    ensureWorld();
 
     function showToast(message) {
       const el = $('toast'); el.textContent = message; el.classList.add('show');
-      clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 1900);
+      clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), message.length > 38 ? 3400 : 1900);
+    }
+    function updateDepthHUD() {
+      const depth = Math.max(0, Math.floor(-player.z));
+      if (depth === displayedDepth) return;
+      displayedDepth = depth;
+      $('depth').textContent = String(depth).padStart(3, '0') + ' m';
     }
     function updateHUD() {
       $('count').textContent = String(fragments).padStart(2, '0');
-      $('depth').textContent = String(Math.max(0, Math.floor(-player.z))).padStart(3, '0') + ' m';
       $('gravity').innerHTML = player.gravity < 0 ? '↓ <span style="font-size:10px;color:#929a9b">FLOOR</span>' : '↑ <span style="font-size:10px;color:#929a9b">CEILING</span>';
-      [...$('progress').children].forEach((bar, i) => bar.classList.toggle('on', i < fragments));
-      $('objectiveText').textContent = fragments >= 5 ? '복도의 끝에 열린 출구를 찾아 탈출하세요.' : '복도에 남은 기록 조각 ' + (5 - fragments) + '개를 모으세요.';
+      const relayCount = activatedRelayIndices.size;
+      const stepCount = relayCount < 3 ? relayCount : fragments;
+      [...$('progress').children].forEach((bar, i) => bar.classList.toggle('on', i < stepCount));
+      if (relayCount < 3) {
+        $('missionLabel').textContent = '임무 01 / 신호 복구';
+        $('objectiveText').textContent = '중계기 신호를 복구하세요  ·  ' + relayCount + ' / 3';
+      } else if (fragments < 5) {
+        $('missionLabel').textContent = '임무 02 / 기억 회수';
+        $('objectiveText').textContent = '깊은 구역에서 기억 조각을 회수하세요  ·  ' + fragments + ' / 5';
+      } else {
+        $('missionLabel').textContent = '임무 03 / 탈출';
+        $('objectiveText').textContent = exitPortal ? '열린 출구를 찾아 복도를 탈출하세요.' : '출구 신호를 추적하세요.';
+      }
+      updateSurvivalHUD();
+      updateDepthHUD();
+    }
+    function updateSurvivalHUD() {
+      $('health').textContent = Array.from({length:3}, (_,i) => i < health ? '♥' : '♡').join(' ');
+      const staminaValue = Math.max(0, Math.round(stamina));
+      if (staminaValue !== lastStaminaDisplay) {
+        lastStaminaDisplay = staminaValue;
+        $('staminaBar').style.width = staminaValue + '%';
+        $('staminaBar').style.background = staminaValue < 25 ? '#fa7b91' : 'var(--cyan)';
+      }
     }
     function pauseScreen() {
       if (gameOver) return;
       running = false;
+      if (locked) document.exitPointerLock?.();
+      keys.clear(); touchInput.forward = 0; touchInput.strafe = 0; touchInput.sprint = false; movePointer = null; lookPointer = null;
       $('screenEyebrow').textContent = 'SESSION PAUSED';
       $('screenTitle').innerHTML = 'SIGNAL<span> LOST</span>';
       $('screenSubtitle').textContent = '탐사가 잠시 중단되었습니다';
@@ -253,11 +525,73 @@
     function startGame() {
       if (gameOver) { location.reload(); return; }
       running = true;
+      bootAudio();
+      if (activatedRelayIndices.size === 3) activateEntity();
       $('screen').classList.add('hidden');
-      renderer.domElement.requestPointerLock?.();
-      previous = performance.now();
+      if (!touchMode) renderer.domElement.requestPointerLock?.();
+      lastFrame = performance.now();
     }
     $('start').addEventListener('click', startGame);
+
+    function jump() {
+      if (running && player.grounded) { player.vy = -player.gravity * 7.2; player.grounded = false; soundEffect('jump'); }
+    }
+    function flipGravity() {
+      if (!running) return;
+      player.gravity *= -1; player.vy = player.gravity * 2.1; player.grounded = false;
+      soundEffect('gravity');
+      let repelledEntity = false;
+      if (entityActive && Math.abs(entityRoot.position.z - player.z) < 18) {
+        entityStunnedUntil = performance.now() + 2600;
+        entityRoot.position.z = Math.max(entityRoot.position.z, player.z + 12);
+        repelledEntity = true;
+      }
+      showToast(repelledEntity ? '중력 파동 — 관측자가 밀려났습니다' : player.gravity < 0 ? '중력 복귀 — 바닥이 아래에 있습니다' : '중력 반전 — 천장으로 이동합니다');
+      updateHUD();
+    }
+    if (touchMode) {
+      const movePad = $('movePad'), moveStick = $('moveStick'), lookPad = $('lookPad');
+      function updateTouchMove(event) {
+        const rect = movePad.getBoundingClientRect();
+        const radius = rect.width * .36;
+        const dx = THREE.MathUtils.clamp(event.clientX - (rect.left + rect.width / 2), -radius, radius);
+        const dy = THREE.MathUtils.clamp(event.clientY - (rect.top + rect.height / 2), -radius, radius);
+        touchInput.strafe = dx / radius;
+        touchInput.forward = -dy / radius;
+        moveStick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+      }
+      movePad.addEventListener('pointerdown', event => {
+        if (!running) return;
+        event.preventDefault(); movePointer = event.pointerId; movePad.setPointerCapture(movePointer); updateTouchMove(event);
+      });
+      movePad.addEventListener('pointermove', event => { if (event.pointerId === movePointer) updateTouchMove(event); });
+      const releaseMove = event => {
+        if (event.pointerId !== movePointer) return;
+        movePointer = null; touchInput.forward = 0; touchInput.strafe = 0;
+        moveStick.style.transform = 'translate(-50%,-50%)';
+      };
+      movePad.addEventListener('pointerup', releaseMove);
+      movePad.addEventListener('pointercancel', releaseMove);
+      lookPad.addEventListener('pointerdown', event => {
+        if (!running) return;
+        event.preventDefault(); lookPointer = event.pointerId; lookX = event.clientX; lookY = event.clientY; lookPad.setPointerCapture(lookPointer);
+      });
+      lookPad.addEventListener('pointermove', event => {
+        if (event.pointerId !== lookPointer) return;
+        const dx = event.clientX - lookX, dy = event.clientY - lookY; lookX = event.clientX; lookY = event.clientY;
+        player.yaw -= dx * .004; player.pitch = THREE.MathUtils.clamp(player.pitch - dy * .003, -1.28, 1.28);
+      });
+      const releaseLook = event => { if (event.pointerId === lookPointer) lookPointer = null; };
+      lookPad.addEventListener('pointerup', releaseLook); lookPad.addEventListener('pointercancel', releaseLook);
+      $('jumpTouch').addEventListener('pointerdown', event => { event.preventDefault(); event.stopPropagation(); jump(); });
+      $('gravityTouch').addEventListener('pointerdown', event => { event.preventDefault(); event.stopPropagation(); flipGravity(); });
+      $('interactTouch').addEventListener('pointerdown', event => { event.preventDefault(); event.stopPropagation(); interact(); });
+      const runButton = $('runTouch');
+      runButton.addEventListener('pointerdown', event => { event.preventDefault(); event.stopPropagation(); runButton.setPointerCapture(event.pointerId); touchInput.sprint = true; runButton.classList.add('active'); });
+      const releaseRun = () => { touchInput.sprint = false; runButton.classList.remove('active'); };
+      runButton.addEventListener('pointerup', releaseRun); runButton.addEventListener('pointercancel', releaseRun); runButton.addEventListener('lostpointercapture', releaseRun);
+      $('pauseTouch').addEventListener('pointerdown', event => { event.preventDefault(); event.stopPropagation(); if (running) pauseScreen(); });
+    }
     document.addEventListener('pointerlockchange', () => {
       locked = document.pointerLockElement === renderer.domElement;
       if (!locked && running && !gameOver) pauseScreen();
@@ -271,18 +605,35 @@
       const k = event.key.toLowerCase(); keys.add(k);
       if ([' ', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(k)) event.preventDefault();
       if (!running || event.repeat) return;
-      if (k === ' ' && player.grounded) { player.vy = -player.gravity * 7.2; player.grounded = false; }
-      if (k === 'g') { player.gravity *= -1; player.vy = player.gravity * 2.1; player.grounded = false; showToast(player.gravity < 0 ? '중력 복귀 — 바닥이 아래에 있습니다' : '중력 반전 — 천장으로 이동합니다'); updateHUD(); }
+      if (k === ' ') jump();
+      if (k === 'g') flipGravity();
       if (k === 'e') interact();
+      if (k === 'p') pauseScreen();
       if (k === 'escape' && locked) document.exitPointerLock?.();
+      else if (k === 'escape' && running) pauseScreen();
     });
     document.addEventListener('keyup', (event) => keys.delete(event.key.toLowerCase()));
-    window.addEventListener('blur', () => { keys.clear(); if (running && locked) document.exitPointerLock?.(); });
+    window.addEventListener('blur', () => { keys.clear(); touchInput.forward = 0; touchInput.strafe = 0; touchInput.sprint = false; if (running && locked) document.exitPointerLock?.(); });
 
     function interact() {
       if (!running) return;
+      let relayTarget = null, relayDistance = 3.1;
+      for (const relay of relays) {
+        if (relay.activated) continue;
+        const worldX = relay.group.position.x + relay.group.parent.position.x;
+        const worldZ = relay.group.position.z + relay.group.parent.position.z;
+        const distance = Math.hypot(player.x - worldX, player.y - 1.2, player.z - worldZ);
+        if (distance < relayDistance) { relayTarget = relay; relayDistance = distance; }
+      }
+      if (relayTarget) {
+        relayTarget.activated = true; activatedRelayIndices.add(relayTarget.index);
+        relayTarget.core.material = mats.light; relayTarget.ring.material = mats.light;
+        soundEffect('relay'); saveProgress(); showToast('신호 중계기 ' + activatedRelayIndices.size + ' / 3 복구 완료'); updateHUD();
+        if (activatedRelayIndices.size === 3) activateEntity();
+        return;
+      }
       const exitWorldZ = exitPortal ? exitPortal.group.position.z + exitPortal.group.parent.position.z : 0;
-      if (exitPortal && fragments >= 5 && Math.hypot(player.x - exitPortal.group.position.x, player.z - exitWorldZ) < 3.3) {
+      if (exitPortal && activatedRelayIndices.size === 3 && fragments >= 5 && Math.hypot(player.x - exitPortal.group.position.x, player.z - exitWorldZ) < 3.3) {
         winGame(); return;
       }
       let closest = null, best = 2.6;
@@ -293,20 +644,32 @@
         if (d < best) { best = d; closest = a; }
       }
       if (closest) {
-        closest.collected = true; closest.group.visible = false; fragments++;
-        showToast('기록 조각 회수 완료  /  ' + String(fragments).padStart(2, '0') + ' — 05');
-        if (fragments >= 5) {
+        if (activatedRelayIndices.size < 3) { showToast('기록 조각 잠김 — 먼저 중계기 3개를 복구하세요'); return; }
+        closest.collected = true; collectedMemoryIndices.add(closest.index); closest.group.visible = false; fragments++;
+        soundEffect('pickup');
+        const recoveredLines = [
+          '기록 1/5 — 복도는 걸을수록 길어지고 있다',
+          '기록 2/5 — 불을 끄면 발소리가 멈춘다',
+          '기록 3/5 — 벽 너머의 나는 나보다 빠르다',
+          '기록 4/5 — 관측자는 신호를 따라온다',
+          '기록 5/5 — 마지막 기록의 이름은 당신이다'
+        ];
+        showToast(recoveredLines[Math.min(fragments - 1, recoveredLines.length - 1)]);
+        if (fragments === 5) {
           const here = Math.max(0, Math.floor(-player.z / SEG));
-          exitIndex = here + 3;
+          exitIndex = Math.min(33, here + 4);
           const exitSegment = segments.get(exitIndex) || createSegment(exitIndex);
-          createExit(exitSegment.group, -SEG * .68);
-          showToast('출구 신호 감지 — 더 깊은 곳으로 이동하세요');
+          if (!exitPortal) createExit(exitSegment.group, -SEG * .68);
+          setTimeout(() => { if (running) showToast('출구 신호 감지 — 더 깊은 곳으로 이동하세요'); }, 3300);
         }
+        saveProgress();
         updateHUD(); return;
       }
-      if (fragments < 5) showToast('반응하는 기록이 없습니다');
+      if (activatedRelayIndices.size < 3) showToast('신호 중계기를 찾아 복구하세요');
+      else if (fragments < 5) showToast('반응하는 기록이 없습니다');
     }
     function winGame() {
+      try { localStorage.removeItem(saveKey); } catch {}
       gameOver = true; running = false; document.exitPointerLock?.();
       $('screenEyebrow').textContent = 'EXPLORATION COMPLETE';
       $('screenTitle').innerHTML = 'YOU ARE <span>REAL</span>';
@@ -316,10 +679,17 @@
     }
 
     function nearTarget() {
-      if (exitPortal && fragments >= 5) {
+      for (const relay of relays) {
+        if (relay.activated) continue;
+        const worldX = relay.group.position.x + relay.group.parent.position.x;
+        const worldZ = relay.group.position.z + relay.group.parent.position.z;
+        if (Math.hypot(player.x - worldX, player.y - 1.2, player.z - worldZ) < 3.4) return '신호 중계기 복구  [ E ]';
+      }
+      if (exitPortal && activatedRelayIndices.size === 3 && fragments >= 5) {
         const d = Math.hypot(player.x, player.z - exitPortal.group.position.z - exitPortal.group.parent.position.z);
         if (d < 3.6) return '출구 통과  [ E ]';
       }
+      if (activatedRelayIndices.size < 3) return '';
       let closest = Infinity;
       for (const a of anomalies) {
         if (a.collected) continue;
@@ -329,55 +699,125 @@
       }
       return closest < 3.2 ? '기록 조각 회수  [ E ]' : '';
     }
+    function disposeSegment(entry) {
+      roomRoot.remove(entry.group);
+      const disposedGeometry = new Set(), disposedMaterial = new Set();
+      entry.group.traverse(object => {
+        if (object.geometry && object.geometry !== boxGeo && !disposedGeometry.has(object.geometry)) {
+          disposedGeometry.add(object.geometry); object.geometry.dispose();
+        }
+        const materials = Array.isArray(object.material) ? object.material : object.material ? [object.material] : [];
+        for (const material of materials) {
+          if (sharedMaterials.has(material) || disposedMaterial.has(material)) continue;
+          disposedMaterial.add(material); material.map?.dispose(); material.dispose();
+        }
+      });
+      for (let i = anomalies.length - 1; i >= 0; i--) {
+        if (anomalies[i].group.parent === entry.group) anomalies.splice(i, 1);
+      }
+      for (let i = relays.length - 1; i >= 0; i--) {
+        if (relays[i].group.parent === entry.group) relays.splice(i, 1);
+      }
+      if (exitPortal?.group.parent === entry.group) exitPortal = null;
+    }
     function ensureWorld() {
       const current = Math.max(0, Math.floor(-player.z / SEG));
-      while (maxSegment < current + 8) { maxSegment++; createSegment(maxSegment); }
-      for (const [idx, s] of segments) {
-        if (idx < current - 9) { roomRoot.remove(s.group); segments.delete(idx); }
+      for (let index = Math.max(-2, current - 2); index <= Math.min(MAX_SEGMENT, current + 6); index++) {
+        if (!segments.has(index)) createSegment(index);
       }
-      if (exitIndex !== null && !exitPortal) createSegment(exitIndex);
+      for (const [idx, s] of segments) {
+        const hasUncollectedMemory = s.anomaly && !s.anomaly.collected;
+        const hasUnactivatedRelay = s.relay && !s.relay.activated;
+        if (idx < current - 2 && idx !== exitIndex && !hasUncollectedMemory && !hasUnactivatedRelay) { disposeSegment(s); segments.delete(idx); }
+      }
+      if (exitIndex !== null && !exitPortal) {
+        const exitSegment = segments.get(exitIndex) || createSegment(exitIndex);
+        if (!exitPortal) createExit(exitSegment.group, -SEG * .68);
+      }
     }
     function update(dt, now) {
       if (running) {
-        const forward = (keys.has('w') || keys.has('arrowup') ? 1 : 0) - (keys.has('s') || keys.has('arrowdown') ? 1 : 0);
-        const strafe = (keys.has('d') || keys.has('arrowright') ? 1 : 0) - (keys.has('a') || keys.has('arrowleft') ? 1 : 0);
+        const keyboardForward = (keys.has('w') || keys.has('arrowup') ? 1 : 0) - (keys.has('s') || keys.has('arrowdown') ? 1 : 0);
+        const keyboardStrafe = (keys.has('d') || keys.has('arrowright') ? 1 : 0) - (keys.has('a') || keys.has('arrowleft') ? 1 : 0);
+        const forward = THREE.MathUtils.clamp(keyboardForward + touchInput.forward, -1, 1);
+        const strafe = THREE.MathUtils.clamp(keyboardStrafe + touchInput.strafe, -1, 1);
         const length = Math.hypot(forward, strafe) || 1;
         const f = forward / length, s = strafe / length;
-        player.x += (Math.cos(player.yaw) * s + Math.sin(player.yaw) * f) * player.speed * dt;
-        player.z += (-Math.cos(player.yaw) * f + Math.sin(player.yaw) * s) * player.speed * dt;
-        player.x = THREE.MathUtils.clamp(player.x, -4.05, 4.05);
+        const moving = Math.hypot(forward, strafe) > .08;
+        const sprinting = (keys.has('shift') || touchInput.sprint) && moving && stamina > 0;
+        if (sprinting) stamina = Math.max(0, stamina - 31 * dt); else stamina = Math.min(100, stamina + 19 * dt);
+        const moveSpeed = sprinting ? player.speed * 1.72 : player.speed;
+        player.x += (Math.cos(player.yaw) * s + Math.sin(player.yaw) * f) * moveSpeed * dt;
+        player.z += (-Math.cos(player.yaw) * f + Math.sin(player.yaw) * s) * moveSpeed * dt;
+        const segmentIndex = Math.max(0, Math.floor(-player.z / SEG));
+        const currentWidth = isSanctuarySegment(segmentIndex) ? 18 : WIDTH;
+        player.x = THREE.MathUtils.clamp(player.x, -currentWidth / 2 + .95, currentWidth / 2 - .95);
         player.z = Math.min(1.5, player.z);
+        player.z = Math.max(-SEG * (MAX_SEGMENT + 1) + 1.5, player.z);
         player.vy += player.gravity * 15 * dt;
         player.y += player.vy * dt;
         player.grounded = false;
         if (player.y <= 1.62) { player.y = 1.62; if (player.gravity < 0) player.grounded = true; player.vy = Math.max(0, player.vy); }
         if (player.y >= 4.38) { player.y = 4.38; if (player.gravity > 0) player.grounded = true; player.vy = Math.min(0, player.vy); }
-        camera.position.set(player.x, player.y, player.z);
+        const bob = moving && player.grounded ? Math.sin(now * (sprinting ? .019 : .012)) * (sprinting ? .075 : .035) : 0;
+        camera.position.set(player.x, player.y + bob, player.z);
         camera.rotation.set(player.pitch, player.yaw, 0, 'YXZ');
-        ensureWorld(); updateHUD();
-        const hint = nearTarget(); $('hint').textContent = hint; $('hint').classList.toggle('show', !!hint);
-        $('crosshair').classList.toggle('hot', !!hint);
+        const targetFov = sprinting ? 78 : 72;
+        if (Math.abs(camera.fov - targetFov) > .15) { camera.fov += (targetFov - camera.fov) * Math.min(1, dt * 5); camera.updateProjectionMatrix(); }
+        if (moving && player.grounded) {
+          footstepTime += dt;
+          if (footstepTime >= (sprinting ? .34 : .52)) { soundEffect('footstep'); footstepTime = 0; }
+        } else footstepTime = .25;
+        updateSurvivalHUD(); ensureWorld(); updateDepthHUD(); updateEntity(dt, now);
+        const safeHall = isSanctuarySegment(segmentIndex);
+        if (safeHall !== wasSafeHall) {
+          wasSafeHall = safeHall;
+          if (safeHall) showToast('안정 구역 — 관측자가 들어오지 못합니다');
+          else if (entityActive) showToast('안정 신호를 벗어났습니다');
+        }
+        proximityTime += dt;
+        if (proximityTime >= .12) {
+          proximityTime = 0;
+          const hint = nearTarget();
+          if (hint !== lastHint) {
+            lastHint = hint; $('hint').textContent = hint; $('hint').classList.toggle('show', !!hint);
+            $('crosshair').classList.toggle('hot', !!hint);
+          }
+        }
       }
       for (const a of anomalies) {
         if (a.collected) continue;
         a.ring.rotation.z += dt * .42; a.core.rotation.y += dt * .65; a.core.rotation.x += dt * .38;
         a.group.position.y = a.baseY + Math.sin(now * .0014 + a.index) * .19;
       }
-      keyLight.intensity = 33 + Math.sin(now * .0009) * 4;
-      farLight.intensity = 12 + Math.sin(now * .0013 + 2) * 4;
+      keyLight.intensity = 34 + Math.sin(now * .0009) * 3;
       renderer.render(scene, camera);
     }
     function animate(now) {
       requestAnimationFrame(animate);
-      const dt = Math.min((now - previous) / 1000, .04); previous = now;
+      const frameBudget = running ? 1000 / (touchMode ? 50 : 60) : 1000 / 30;
+      const elapsed = now - lastFrame;
+      if (elapsed < frameBudget - 1) return;
+      lastFrame = now;
+      const dt = Math.min(elapsed / 1000, .04);
+      frameSampleTime += elapsed; frameSampleCount++;
+      if (frameSampleTime >= 500) {
+        $('fps').textContent = 'FPS: ' + Math.round(frameSampleCount * 1000 / frameSampleTime);
+        frameSampleTime = 0; frameSampleCount = 0;
+      }
       update(dt, now);
     }
     requestAnimationFrame(animate);
     window.addEventListener('resize', () => {
       camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
-      renderer.setSize(innerWidth, innerHeight); renderer.setPixelRatio(Math.min(devicePixelRatio, 1.8));
+      renderer.setPixelRatio(pixelRatioCap); renderer.setSize(innerWidth, innerHeight);
     });
     updateHUD();
+    if (savedProgress) {
+      $('start').querySelector('span').textContent = '탐사 이어하기';
+      $('footnote').textContent = 'CHECKPOINT AUTO-SAVED / FIELD RECORD 07';
+      $('screenStory').textContent = '마지막으로 복구한 신호 지점에서 탐사를 이어갑니다. 관측자가 아직 복도에 있습니다.';
+    }
   </script>
 </body>
 </html>
