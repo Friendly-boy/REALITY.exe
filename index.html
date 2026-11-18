@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#080a0d">
+  <meta name="description" content="중력과 공간이 고장 난 끝없는 복도를 걷는 1인칭 탐험 게임">
+  <title>REALITY.exe — 복도 07</title>
+  <style>
+    :root { color-scheme: dark; --ink:#f0eee8; --muted:#9b9ba2; --cyan:#8af5e4; --pink:#fa7b91; --panel:rgba(11,14,19,.82); }
+    * { box-sizing:border-box; }
+    html,body { margin:0; width:100%; height:100%; overflow:hidden; background:#080a0d; color:var(--ink); font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; }
+    button { font:inherit; color:inherit; }
+    #game { position:fixed; inset:0; background:radial-gradient(ellipse at 50% 40%,#26343a 0%,#12171c 55%,#080a0d 100%); }
+    #game canvas { width:100%; height:100%; display:block; }
+    .grain,.scanlines,.vignette { position:absolute; inset:0; pointer-events:none; }
+    .grain { opacity:.08; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.88' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E"); mix-blend-mode:screen; }
+    .scanlines { opacity:.14; background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(0,0,0,.25) 4px); }
+    .vignette { background:radial-gradient(ellipse at center,transparent 42%,rgba(0,0,0,.62) 100%); }
+    .topbar { position:absolute; top:0; left:0; right:0; display:flex; justify-content:space-between; align-items:flex-start; padding:clamp(18px,3vw,36px) clamp(18px,4vw,56px); pointer-events:none; text-shadow:0 1px 18px #000; }
+    .brand { display:flex; gap:14px; align-items:center; letter-spacing:.18em; font-size:12px; font-weight:750; }
+    .brand-mark { display:grid; place-items:center; width:30px; height:30px; border:1px solid rgba(138,245,228,.6); color:var(--cyan); transform:rotate(45deg); font-size:12px; }
+    .brand-mark span { transform:rotate(-45deg); }
+    .brand small { display:block; margin-top:5px; color:#8c9496; font-size:9px; font-weight:500; letter-spacing:.32em; }
+    .build { text-align:right; color:#9a9da1; font:10px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace; letter-spacing:.12em; }
+    .hud { position:absolute; left:clamp(18px,4vw,56px); bottom:clamp(24px,5vh,58px); display:flex; gap:28px; align-items:end; pointer-events:none; transition:opacity .35s; }
+    .hud-block { min-width:88px; border-left:1px solid rgba(138,245,228,.5); padding-left:11px; }
+    .hud-label { color:#95999c; font-size:9px; letter-spacing:.22em; text-transform:uppercase; }
+    .hud-value { margin-top:5px; color:#eef3ee; font:19px/1 ui-monospace,SFMono-Regular,Consolas,monospace; letter-spacing:.03em; }
+    .hud-value em { color:var(--cyan); font-style:normal; }
+    .objective { position:absolute; right:clamp(18px,4vw,56px); bottom:clamp(24px,5vh,58px); width:min(245px,40vw); text-align:right; pointer-events:none; }
+    .objective .hud-label { color:var(--cyan); }
+    .objective p { margin:8px 0 0; color:#d4d4d0; font-size:12px; line-height:1.65; text-shadow:0 2px 10px #000; }
+    .progress { display:flex; justify-content:flex-end; gap:5px; margin-top:12px; }
+    .progress i { width:17px; height:3px; background:rgba(255,255,255,.19); }
+    .progress i.on { background:var(--cyan); box-shadow:0 0 9px rgba(138,245,228,.55); }
+    .crosshair { position:absolute; left:50%; top:50%; width:19px; height:19px; transform:translate(-50%,-50%); opacity:.8; pointer-events:none; transition:transform .18s,opacity .18s; }
+    .crosshair:before,.crosshair:after { content:""; position:absolute; background:rgba(237,247,241,.78); box-shadow:0 0 5px rgba(138,245,228,.6); }
+    .crosshair:before { width:1px; height:19px; left:9px; top:0; }
+    .crosshair:after { height:1px; width:19px; left:0; top:9px; }
+    .crosshair.hot { transform:translate(-50%,-50%) scale(1.55); }
+    .hint { position:absolute; left:50%; top:calc(50% + 32px); transform:translateX(-50%); padding:7px 11px; background:rgba(7,10,12,.72); border:1px solid rgba(138,245,228,.34); color:#d5e7e2; font-size:10px; letter-spacing:.09em; opacity:0; transition:opacity .2s; pointer-events:none; white-space:nowrap; }
+    .hint.show { opacity:1; }
+    .toast { position:absolute; top:21%; left:50%; transform:translate(-50%,-8px); padding:11px 16px; color:#d9fff7; border-top:1px solid rgba(138,245,228,.65); border-bottom:1px solid rgba(138,245,228,.25); background:rgba(7,13,15,.7); letter-spacing:.13em; font:10px ui-monospace,SFMono-Regular,Consolas,monospace; opacity:0; transition:opacity .3s,transform .3s; pointer-events:none; white-space:nowrap; }
+    .toast.show { opacity:1; transform:translate(-50%,0); }
+    .screen { position:absolute; inset:0; display:grid; place-items:center; padding:22px; background:linear-gradient(90deg,rgba(4,7,9,.6),rgba(4,7,9,.16) 50%,rgba(4,7,9,.55)); transition:opacity .45s,visibility .45s; }
+    .screen.hidden { opacity:0; visibility:hidden; pointer-events:none; }
+    .panel { width:min(580px,100%); padding:clamp(26px,5vw,50px); background:linear-gradient(135deg,rgba(12,18,22,.92),rgba(7,10,13,.83)); border:1px solid rgba(206,238,228,.17); box-shadow:0 28px 90px rgba(0,0,0,.45); position:relative; overflow:hidden; }
+    .panel:before { content:""; position:absolute; top:0; left:0; width:100%; height:1px; background:linear-gradient(90deg,transparent,var(--cyan),transparent); opacity:.65; }
+    .eyebrow { color:var(--cyan); letter-spacing:.28em; font:10px ui-monospace,SFMono-Regular,Consolas,monospace; }
+    h1 { margin:17px 0 0; font-size:clamp(39px,8vw,76px); font-weight:650; letter-spacing:-.07em; line-height:.95; }
+    h1 span { color:var(--cyan); font-weight:350; }
+    .subtitle { margin:15px 0 0; color:#bec3c2; font-size:13px; letter-spacing:.13em; }
+    .story { max-width:410px; margin:27px 0 0; color:#aeb4b3; font-size:13px; line-height:1.8; }
+    .controls { display:grid; grid-template-columns:1fr 1fr; gap:10px 18px; margin:27px 0 0; padding-top:20px; border-top:1px solid rgba(255,255,255,.1); color:#9da4a3; font-size:11px; }
+    .controls strong { display:inline-grid; place-items:center; min-width:21px; height:20px; margin-right:7px; border:1px solid rgba(255,255,255,.22); color:#edf5f1; font:10px ui-monospace,SFMono-Regular,Consolas,monospace; }
+    .start { display:flex; align-items:center; justify-content:space-between; width:100%; margin-top:28px; padding:14px 16px; border:1px solid rgba(138,245,228,.58); background:rgba(138,245,228,.08); color:#dbfff7; letter-spacing:.14em; font-size:11px; cursor:pointer; transition:background .2s,transform .2s; }
+    .start:hover { background:rgba(138,245,228,.16); transform:translateY(-1px); }
+    .start span:last-child { font-size:18px; }
+    .footnote { margin-top:15px; color:#707a7a; font:9px ui-monospace,SFMono-Regular,Consolas,monospace; letter-spacing:.1em; }
+    .corner { position:absolute; width:14px; height:14px; border-color:rgba(138,245,228,.55); }
+    .corner.tl { left:0; top:0; border-left:1px solid; border-top:1px solid; }
+    .corner.br { right:0; bottom:0; border-right:1px solid; border-bottom:1px solid; }
+    .error { position:absolute; inset:auto 20px 20px; display:none; margin:auto; width:min(540px,calc(100% - 40px)); padding:15px 18px; color:#ffd1d4; background:rgba(63,18,24,.9); border:1px solid rgba(250,123,145,.4); font-size:12px; line-height:1.6; }
+    @media(max-width:600px) { .topbar { padding:18px; } .build { font-size:8px; } .hud { left:18px; bottom:22px; gap:13px; } .hud-block { min-width:67px; padding-left:8px; } .hud-value { font-size:16px; } .objective { right:18px; bottom:22px; width:38vw; } .objective p { font-size:10px; } .controls { grid-template-columns:1fr; gap:9px; } .panel { padding:27px 23px; } }
+  </style>
+  <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
+</head>
+<body>
+  <main id="game" aria-label="REALITY.exe 게임 화면">
+    <div class="topbar">
+      <div class="brand"><div class="brand-mark"><span>R</span></div><div>REALITY.exe<small>ANOMALY RESEARCH UNIT</small></div></div>
+      <div class="build">FIELD RECORD&nbsp; / &nbsp;07<br><span id="connection">SIGNAL: UNSTABLE</span></div>
+    </div>
+    <div class="hud" id="hud">
+      <div class="hud-block"><div class="hud-label">기록 조각</div><div class="hud-value"><em id="count">00</em><span style="color:#656d70"> / 05</span></div></div>
+      <div class="hud-block"><div class="hud-label">복도 깊이</div><div class="hud-value" id="depth">000 m</div></div>
+      <div class="hud-block"><div class="hud-label">중력</div><div class="hud-value" id="gravity">↓ <span style="font-size:10px;color:#929a9b">FLOOR</span></div></div>
+    </div>
+    <div class="objective"><div class="hud-label">임무 / RECOVER</div><p id="objectiveText">복도에 남은 기록 조각 5개를 모으세요.</p><div class="progress" id="progress"><i></i><i></i><i></i><i></i><i></i></div></div>
+    <div class="crosshair" id="crosshair"></div><div class="hint" id="hint">[ E ] 기록 조각 회수</div><div class="toast" id="toast"></div>
+    <div class="grain"></div><div class="scanlines"></div><div class="vignette"></div>
+    <section class="screen" id="screen">
+      <div class="panel">
+        <i class="corner tl"></i><i class="corner br"></i>
+        <div class="eyebrow" id="screenEyebrow">EXPLORATION PROTOCOL&nbsp; 01</div>
+        <h1 id="screenTitle">REALITY<span>.exe</span></h1>
+        <div class="subtitle" id="screenSubtitle">복도 07 — 중력이 기억을 잃은 곳</div>
+        <p class="story" id="screenStory">끝이 보이지 않는 복도에서 사라진 기록 조각을 회수하세요. 벽 너머에서 시선이 느껴진다면, 이미 무언가가 당신을 발견한 뒤입니다.</p>
+        <div class="controls" id="controls"><div><strong>W A S D</strong>이동</div><div><strong>MOUSE</strong>둘러보기</div><div><strong>SPACE</strong>점프</div><div><strong>G</strong>중력 반전</div><div><strong>E</strong>조각 회수 / 출구</div><div><strong>ESC</strong>일시정지</div></div>
+        <button class="start" id="start"><span>탐사 시작</span><span>↗</span></button>
+        <div class="footnote" id="footnote">권장: 헤드폰 착용&nbsp; / &nbsp;화면을 클릭하면 포인터가 잠깁니다</div>
+      </div>
+    </section>
+    <div class="error" id="error"></div>
+  </main>
+  <script type="module">
+    import * as THREE from 'three';
+
+    const $ = (id) => document.getElementById(id);
+    const root = $('game');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x101719);
+    scene.fog = new THREE.FogExp2(0x101719, 0.019);
+    const camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, 0.08, 160);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 1.8));
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.13;
+    root.prepend(renderer.domElement);
+
+    const hemi = new THREE.HemisphereLight(0xb7d9d5, 0x211b20, 1.12);
+    scene.add(hemi);
+    const keyLight = new THREE.PointLight(0x9af5e1, 36, 30, 1.7);
+    keyLight.position.set(0, 4.5, -5);
+    scene.add(keyLight);
+    const farLight = new THREE.PointLight(0xff667d, 13, 22, 1.8);
+    farLight.position.set(0, 3.8, -20);
+    scene.add(farLight);
+
+    const mats = {
+      floor: new THREE.MeshStandardMaterial({ color: 0x343c3d, roughness: .84, metalness: .16 }),
+      wall: new THREE.MeshStandardMaterial({ color: 0x343c39, roughness: .92, metalness: .07 }),
+      ceiling: new THREE.MeshStandardMaterial({ color: 0x252d30, roughness: .9, metalness: .08 }),
+      trim: new THREE.MeshStandardMaterial({ color: 0x747974, roughness: .57, metalness: .35 }),
+      dark: new THREE.MeshStandardMaterial({ color: 0x171c1d, roughness: .72, metalness: .2 }),
+      light: new THREE.MeshStandardMaterial({ color: 0xa9fff0, emissive: 0x5df2d5, emissiveIntensity: 2.4 }),
+      red: new THREE.MeshStandardMaterial({ color: 0x8e2937, emissive: 0x67101d, emissiveIntensity: .65, roughness: .42 }),
+      anomaly: new THREE.MeshStandardMaterial({ color: 0x8fffea, emissive: 0x39f5dc, emissiveIntensity: 2.7, roughness: .18, metalness: .42 }),
+      ghost: new THREE.MeshStandardMaterial({ color: 0x1e2530, emissive: 0x273d50, emissiveIntensity: .35, roughness: 1, transparent: true, opacity: .92 })
+    };
+    const boxGeo = new THREE.BoxGeometry(1, 1, 1);
+    const roomRoot = new THREE.Group();
+    scene.add(roomRoot);
+    const segments = new Map();
+    const anomalies = [];
+    const SEG = 22, WIDTH = 10, HEIGHT = 6;
+    const player = { x: 0, y: 1.62, z: 0, yaw: 0, pitch: 0, vy: 0, gravity: -1, grounded: true, speed: 4.3 };
+    let maxSegment = 8, running = false, locked = false, gameOver = false, fragments = 0, exitPortal = null, exitIndex = null, toastTimer = 0;
+    const keys = new Set();
+    let previous = performance.now();
+
+    function seeded(n) { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
+    function meshBox(parent, material, x, y, z, sx, sy, sz) {
+      const m = new THREE.Mesh(boxGeo, material);
+      m.position.set(x, y, z); m.scale.set(sx, sy, sz); parent.add(m); return m;
+    }
+    function lamp(parent, x, y, z, color = 0x8af5e4, power = 11) {
+      const lightMaterial = color === 0xff7284 ? mats.red : mats.light;
+      const m = meshBox(parent, lightMaterial, x, y, z, .22, .07, 3.3);
+      if (color === 0xff7284) m.material = new THREE.MeshStandardMaterial({ color:0xff9ba7, emissive:0xff3c5a, emissiveIntensity:2.3 });
+      const p = new THREE.PointLight(color, power, 10, 2); p.position.set(x, y - .3, z); parent.add(p);
+    }
+    function createAnomaly(index, parent, z) {
+      const group = new THREE.Group();
+      const x = (seeded(index + 4) - .5) * 4.1;
+      const y = 1.5 + seeded(index + 19) * 2.7;
+      group.position.set(x, y, z);
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(.82, .045, 8, 48), mats.anomaly);
+      ring.rotation.x = .3 + seeded(index + 3) * .9;
+      group.add(ring);
+      const core = new THREE.Mesh(new THREE.OctahedronGeometry(.38, 1), mats.anomaly);
+      group.add(core);
+      const glow = new THREE.PointLight(0x67ffe8, 7, 6, 2); group.add(glow);
+      const label = document.createElement('canvas'); label.width = 256; label.height = 64;
+      const ctx = label.getContext('2d');
+      ctx.fillStyle = '#cffff6'; ctx.font = 'bold 20px monospace'; ctx.textAlign = 'center'; ctx.fillText('MEMORY / ' + String(index).padStart(2, '0'), 128, 39);
+      const tex = new THREE.CanvasTexture(label);
+      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
+      sprite.scale.set(2.5, .62, 1); sprite.position.y = 1.22; group.add(sprite);
+      parent.add(group);
+      const record = { group, ring, core, collected: false, index, baseY: y };
+      anomalies.push(record);
+      return record;
+    }
+    function createExit(parent, z) {
+      const group = new THREE.Group(); group.position.set(0, 0, z); parent.add(group);
+      const frameMat = new THREE.MeshStandardMaterial({ color:0x8af5e4, emissive:0x39f5dc, emissiveIntensity:1.8, metalness:.5, roughness:.2 });
+      const portalMat = new THREE.MeshBasicMaterial({ color:0x72eedd, transparent:true, opacity:.2, side:THREE.DoubleSide });
+      meshBox(group, frameMat, -1.25, 2.15, 0, .12, 4.3, .22);
+      meshBox(group, frameMat, 1.25, 2.15, 0, .12, 4.3, .22);
+      meshBox(group, frameMat, 0, 4.24, 0, 2.6, .12, .22);
+      const plane = new THREE.Mesh(new THREE.PlaneGeometry(2.35, 4), portalMat); plane.position.set(0, 2.1, 0); group.add(plane);
+      const glow = new THREE.PointLight(0x6bffe4, 20, 14, 1.5); glow.position.set(0, 2.4, -1); group.add(glow);
+      exitPortal = { group, z, plane };
+      return exitPortal;
+    }
+    function createSegment(index) {
+      if (segments.has(index)) return segments.get(index);
+      const group = new THREE.Group(); group.position.z = -index * SEG; roomRoot.add(group);
+      const floor = new THREE.Mesh(new THREE.PlaneGeometry(WIDTH, SEG), mats.floor); floor.rotation.x = -Math.PI / 2; floor.position.set(0, 0, -SEG / 2); group.add(floor);
+      const ceil = new THREE.Mesh(new THREE.PlaneGeometry(WIDTH, SEG), mats.ceiling); ceil.rotation.x = Math.PI / 2; ceil.position.set(0, HEIGHT, -SEG / 2); group.add(ceil);
+      meshBox(group, mats.wall, -WIDTH/2, HEIGHT/2, -SEG/2, .35, HEIGHT, SEG);
+      meshBox(group, mats.wall, WIDTH/2, HEIGHT/2, -SEG/2, .35, HEIGHT, SEG);
+      // Repeating wall insets and floor seams make the corridor feel built, not flat.
+      for (const side of [-1, 1]) {
+        for (let k = 0; k < 3; k++) {
+          const z = -3 - k * 6.2;
+          meshBox(group, mats.trim, side * 4.77, 2.8, z, .08, 5.35, .09);
+          meshBox(group, mats.dark, side * 4.79, 2.7, z - 2.4, .08, 2.8, 1.15);
+          meshBox(group, mats.trim, side * 4.71, 2.7, z - 2.4, .09, 2.92, .06);
+        }
+      }
+      for (let k = 0; k < 3; k++) {
+        const z = -2.5 - k * 7;
+        lamp(group, -2.2, 5.76, z, index % 5 === 3 ? 0xff7284 : 0x8af5e4, 10);
+        lamp(group, 2.2, 5.76, z, index % 5 === 3 ? 0xff7284 : 0x8af5e4, 10);
+        meshBox(group, mats.trim, 0, .025, z, WIDTH - .45, .05, .045);
+      }
+      // Occasional impossible detail: a door hanging in the air with its own light.
+      if (index > 0 && index % 4 === 2) {
+        const x = seeded(index + 83) > .5 ? 3.1 : -3.1;
+        const door = new THREE.Group(); door.position.set(x, 1.8 + seeded(index + 5) * 1.3, -SEG * .64); group.add(door);
+        meshBox(door, mats.red, 0, 0, 0, 1.2, 2.8, .12);
+        meshBox(door, mats.trim, -.68, 0, 0, .12, 3.05, .22);
+        meshBox(door, mats.trim, .68, 0, 0, .12, 3.05, .22);
+        meshBox(door, mats.trim, 0, 1.48, 0, 1.45, .12, .22);
+        const knob = new THREE.PointLight(0xff415f, 3.5, 5, 2); knob.position.set(0, .1, .5); door.add(knob);
+      }
+      let anomaly = null;
+      if (index > 0 && index % 2 === 1 && seeded(index + 1) > .22) anomaly = createAnomaly(index, group, -SEG * .66);
+      const entry = { index, group, anomaly };
+      segments.set(index, entry);
+      return entry;
+    }
+    for (let i = -2; i <= maxSegment; i++) createSegment(i);
+    camera.position.set(player.x, player.y, player.z);
+    scene.add(camera);
+
+    function showToast(message) {
+      const el = $('toast'); el.textContent = message; el.classList.add('show');
+      clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 1900);
+    }
+    function updateHUD() {
+      $('count').textContent = String(fragments).padStart(2, '0');
+      $('depth').textContent = String(Math.max(0, Math.floor(-player.z))).padStart(3, '0') + ' m';
+      $('gravity').innerHTML = player.gravity < 0 ? '↓ <span style="font-size:10px;color:#929a9b">FLOOR</span>' : '↑ <span style="font-size:10px;color:#929a9b">CEILING</span>';
+      [...$('progress').children].forEach((bar, i) => bar.classList.toggle('on', i < fragments));
+      $('objectiveText').textContent = fragments >= 5 ? '복도의 끝에 열린 출구를 찾아 탈출하세요.' : '복도에 남은 기록 조각 ' + (5 - fragments) + '개를 모으세요.';
+    }
+    function pauseScreen() {
+      if (gameOver) return;
+      running = false;
+      $('screenEyebrow').textContent = 'SESSION PAUSED';
+      $('screenTitle').innerHTML = 'SIGNAL<span> LOST</span>';
+      $('screenSubtitle').textContent = '탐사가 잠시 중단되었습니다';
+      $('screenStory').textContent = '복도는 계속 당신을 기다리고 있습니다. 준비가 되면 탐사를 재개하세요.';
+      $('start').querySelector('span').textContent = '탐사 재개';
+      $('screen').classList.remove('hidden');
+    }
+    function startGame() {
+      if (gameOver) { location.reload(); return; }
+      running = true;
+      $('screen').classList.add('hidden');
+      renderer.domElement.requestPointerLock?.();
+      previous = performance.now();
+    }
+    $('start').addEventListener('click', startGame);
+    document.addEventListener('pointerlockchange', () => {
+      locked = document.pointerLockElement === renderer.domElement;
+      if (!locked && running && !gameOver) pauseScreen();
+    });
+    document.addEventListener('mousemove', (event) => {
+      if (!locked || !running) return;
+      player.yaw -= event.movementX * .00215;
+      player.pitch = THREE.MathUtils.clamp(player.pitch - event.movementY * .0018, -1.28, 1.28);
+    });
+    document.addEventListener('keydown', (event) => {
+      const k = event.key.toLowerCase(); keys.add(k);
+      if ([' ', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(k)) event.preventDefault();
+      if (!running || event.repeat) return;
+      if (k === ' ' && player.grounded) { player.vy = -player.gravity * 7.2; player.grounded = false; }
+      if (k === 'g') { player.gravity *= -1; player.vy = player.gravity * 2.1; player.grounded = false; showToast(player.gravity < 0 ? '중력 복귀 — 바닥이 아래에 있습니다' : '중력 반전 — 천장으로 이동합니다'); updateHUD(); }
+      if (k === 'e') interact();
+      if (k === 'escape' && locked) document.exitPointerLock?.();
+    });
+    document.addEventListener('keyup', (event) => keys.delete(event.key.toLowerCase()));
+    window.addEventListener('blur', () => { keys.clear(); if (running && locked) document.exitPointerLock?.(); });
+
+    function interact() {
+      if (!running) return;
+      const exitWorldZ = exitPortal ? exitPortal.group.position.z + exitPortal.group.parent.position.z : 0;
+      if (exitPortal && fragments >= 5 && Math.hypot(player.x - exitPortal.group.position.x, player.z - exitWorldZ) < 3.3) {
+        winGame(); return;
+      }
+      let closest = null, best = 2.6;
+      for (const a of anomalies) {
+        if (a.collected) continue;
+        const worldZ = a.group.position.z + a.group.parent.position.z;
+        const d = Math.hypot(player.x - a.group.position.x, player.y - (a.baseY + a.group.parent.position.y), player.z - worldZ);
+        if (d < best) { best = d; closest = a; }
+      }
+      if (closest) {
+        closest.collected = true; closest.group.visible = false; fragments++;
+        showToast('기록 조각 회수 완료  /  ' + String(fragments).padStart(2, '0') + ' — 05');
+        if (fragments >= 5) {
+          const here = Math.max(0, Math.floor(-player.z / SEG));
+          exitIndex = here + 3;
+          const exitSegment = segments.get(exitIndex) || createSegment(exitIndex);
+          createExit(exitSegment.group, -SEG * .68);
+          showToast('출구 신호 감지 — 더 깊은 곳으로 이동하세요');
+        }
+        updateHUD(); return;
+      }
+      if (fragments < 5) showToast('반응하는 기록이 없습니다');
+    }
+    function winGame() {
+      gameOver = true; running = false; document.exitPointerLock?.();
+      $('screenEyebrow').textContent = 'EXPLORATION COMPLETE';
+      $('screenTitle').innerHTML = 'YOU ARE <span>REAL</span>';
+      $('screenSubtitle').textContent = '복도 07 — 기록 회수 성공';
+      $('screenStory').textContent = '다섯 개의 기록을 가지고 복도를 빠져나왔습니다. 그런데 마지막 기록의 작성자는 당신의 이름을 쓰고 있었습니다.';
+      $('controls').style.display = 'none'; $('start').querySelector('span').textContent = '다시 탐사'; $('footnote').textContent = 'FIELD RECORD 07 / END'; $('screen').classList.remove('hidden');
+    }
+
+    function nearTarget() {
+      if (exitPortal && fragments >= 5) {
+        const d = Math.hypot(player.x, player.z - exitPortal.group.position.z - exitPortal.group.parent.position.z);
+        if (d < 3.6) return '출구 통과  [ E ]';
+      }
+      let closest = Infinity;
+      for (const a of anomalies) {
+        if (a.collected) continue;
+        const z = a.group.position.z + a.group.parent.position.z;
+        const d = Math.hypot(player.x - a.group.position.x, player.y - (a.baseY + a.group.parent.position.y), player.z - z);
+        closest = Math.min(closest, d);
+      }
+      return closest < 3.2 ? '기록 조각 회수  [ E ]' : '';
+    }
+    function ensureWorld() {
+      const current = Math.max(0, Math.floor(-player.z / SEG));
+      while (maxSegment < current + 8) { maxSegment++; createSegment(maxSegment); }
+      for (const [idx, s] of segments) {
+        if (idx < current - 9) { roomRoot.remove(s.group); segments.delete(idx); }
+      }
+      if (exitIndex !== null && !exitPortal) createSegment(exitIndex);
+    }
+    function update(dt, now) {
+      if (running) {
+        const forward = (keys.has('w') || keys.has('arrowup') ? 1 : 0) - (keys.has('s') || keys.has('arrowdown') ? 1 : 0);
+        const strafe = (keys.has('d') || keys.has('arrowright') ? 1 : 0) - (keys.has('a') || keys.has('arrowleft') ? 1 : 0);
+        const length = Math.hypot(forward, strafe) || 1;
+        const f = forward / length, s = strafe / length;
+        player.x += (Math.cos(player.yaw) * s + Math.sin(player.yaw) * f) * player.speed * dt;
+        player.z += (-Math.cos(player.yaw) * f + Math.sin(player.yaw) * s) * player.speed * dt;
+        player.x = THREE.MathUtils.clamp(player.x, -4.05, 4.05);
+        player.z = Math.min(1.5, player.z);
+        player.vy += player.gravity * 15 * dt;
+        player.y += player.vy * dt;
+        player.grounded = false;
+        if (player.y <= 1.62) { player.y = 1.62; if (player.gravity < 0) player.grounded = true; player.vy = Math.max(0, player.vy); }
+        if (player.y >= 4.38) { player.y = 4.38; if (player.gravity > 0) player.grounded = true; player.vy = Math.min(0, player.vy); }
+        camera.position.set(player.x, player.y, player.z);
+        camera.rotation.set(player.pitch, player.yaw, 0, 'YXZ');
+        ensureWorld(); updateHUD();
+        const hint = nearTarget(); $('hint').textContent = hint; $('hint').classList.toggle('show', !!hint);
+        $('crosshair').classList.toggle('hot', !!hint);
+      }
+      for (const a of anomalies) {
+        if (a.collected) continue;
+        a.ring.rotation.z += dt * .42; a.core.rotation.y += dt * .65; a.core.rotation.x += dt * .38;
+        a.group.position.y = a.baseY + Math.sin(now * .0014 + a.index) * .19;
+      }
+      keyLight.intensity = 33 + Math.sin(now * .0009) * 4;
+      farLight.intensity = 12 + Math.sin(now * .0013 + 2) * 4;
+      renderer.render(scene, camera);
+    }
+    function animate(now) {
+      requestAnimationFrame(animate);
+      const dt = Math.min((now - previous) / 1000, .04); previous = now;
+      update(dt, now);
+    }
+    requestAnimationFrame(animate);
+    window.addEventListener('resize', () => {
+      camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight); renderer.setPixelRatio(Math.min(devicePixelRatio, 1.8));
+    });
+    updateHUD();
+  </script>
+</body>
+</html>
