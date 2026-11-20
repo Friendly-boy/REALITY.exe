@@ -32,6 +32,7 @@
     .hud-value { margin-top:5px; color:#eef3ee; font:19px/1 ui-monospace,SFMono-Regular,Consolas,monospace; letter-spacing:.03em; }
     .hud-value em { color:var(--cyan); font-style:normal; }
     .status-value { color:#ff9aa8; letter-spacing:.08em; }
+    .stealth-status { min-height:10px; margin-top:7px; color:#c1afff; font:8px ui-monospace,monospace; letter-spacing:.12em; }
     .stamina-track { width:80px; height:3px; margin-top:7px; background:rgba(255,255,255,.17); }
     .stamina-track i { display:block; width:100%; height:100%; background:var(--cyan); transition:width .15s; }
     .objective { position:absolute; right:clamp(18px,4vw,56px); bottom:clamp(24px,5vh,58px); width:min(245px,40vw); text-align:right; pointer-events:none; }
@@ -68,6 +69,7 @@
     .touch-actions { position:absolute; right:20px; bottom:22px; display:grid; grid-template-columns:repeat(2,54px); gap:9px; }
     .touch-actions button { width:54px; height:54px; border:1px solid rgba(138,245,228,.36); border-radius:50%; background:rgba(5,12,14,.62); color:#d9fff7; font:9px ui-monospace,monospace; letter-spacing:.06em; touch-action:none; }
     .touch-actions button:active,.touch-actions button.active { background:rgba(138,245,228,.25); border-color:rgba(138,245,228,.8); }
+    .touch-actions button.stealth-on { color:#d1c6ff; border-color:rgba(178,151,255,.8); background:rgba(100,76,170,.25); }
     .touch-help { display:none; color:#7d8c8a; font-size:10px; margin-top:8px; }
     #game.touch-mode .screen { z-index:20; }
     #game.touch-mode .topbar { z-index:22; }
@@ -111,14 +113,14 @@
       <div class="hud-block"><div class="hud-label">기록 조각</div><div class="hud-value"><em id="count">00</em><span style="color:#656d70"> / 05</span></div></div>
       <div class="hud-block"><div class="hud-label">복도 깊이</div><div class="hud-value" id="depth">000 m</div></div>
       <div class="hud-block"><div class="hud-label">중력</div><div class="hud-value" id="gravity">↓ <span style="font-size:10px;color:#929a9b">FLOOR</span></div></div>
-      <div class="hud-block"><div class="hud-label">생존 / 체력</div><div class="hud-value status-value" id="health">♥ ♥ ♥</div><div class="stamina-track"><i id="staminaBar"></i></div></div>
+      <div class="hud-block"><div class="hud-label">생존 / 체력</div><div class="hud-value status-value" id="health">♥ ♥ ♥</div><div class="stamina-track"><i id="staminaBar"></i></div><div class="stealth-status" id="stealthStatus"></div></div>
     </div>
-    <div class="objective"><div class="hud-label" id="missionLabel">임무 01 / 신호 복구</div><p id="objectiveText">신호 중계기 3개를 작동시키세요.</p><div class="progress" id="progress"><i></i><i></i><i></i><i></i><i></i></div><div class="exposure-meter"><span>관찰자 시선</span><span class="exposure-track"><i id="exposureBar"></i></span><span id="exposurePercent">0%</span></div></div>
-    <div class="crosshair" id="crosshair"></div><div class="hint" id="hint">[ E ] 상호작용</div><div class="toast" id="toast"></div><div class="entity-alert" id="entityAlert">관찰자 접근 중</div>
+    <div class="objective"><div class="hud-label" id="missionLabel">임무 01 / 신호 복구</div><p id="objectiveText">신호 중계기 3개를 작동시키세요.</p><div class="progress" id="progress"><i></i><i></i><i></i><i></i><i></i></div><div class="exposure-meter"><span>움직임 감지</span><span class="exposure-track"><i id="exposureBar"></i></span><span id="exposurePercent">0%</span></div></div>
+    <div class="crosshair" id="crosshair"></div><div class="hint" id="hint">[ E ] 상호작용</div><div class="toast" id="toast"></div><div class="entity-alert" id="entityAlert">눈을 감았습니다 · 이동 가능</div>
     <div class="touch-layer" id="touchLayer">
       <div class="look-pad" id="lookPad" aria-label="화면을 드래그해 둘러보기"></div>
       <div class="move-pad" id="movePad" aria-label="이동 조이스틱"><span class="move-caption">MOVE</span><span class="move-stick" id="moveStick"></span></div>
-      <div class="touch-actions"><button id="gravityTouch" aria-label="중력 파동">GRAV</button><button id="interactTouch" aria-label="상호작용">USE</button><button id="runTouch" aria-label="달리기">RUN</button><button id="pauseTouch" aria-label="일시정지">PAUSE</button></div>
+      <div class="touch-actions"><button id="stealthTouch" aria-label="은신 자세 전환">HIDE</button><button id="gravityTouch" aria-label="중력 파동">GRAV</button><button id="interactTouch" aria-label="상호작용">USE</button><button id="runTouch" aria-label="달리기">RUN</button><button id="pauseTouch" aria-label="일시정지">PAUSE</button></div>
     </div>
     <div class="grain"></div><div class="scanlines"></div><div class="vignette"></div><div class="damage-flash"></div>
     <section class="screen" id="screen">
@@ -127,9 +129,9 @@
         <div class="eyebrow" id="screenEyebrow">EXPLORATION PROTOCOL&nbsp; 01</div>
         <h1 id="screenTitle">REALITY<span>.exe</span></h1>
         <div class="subtitle" id="screenSubtitle">복도 07 — 중력이 기억을 잃은 곳</div>
-        <p class="story" id="screenStory">학교·아파트·지하 설비 구역을 지나 중계기를 복구하고 기억 조각을 회수하세요. 신호가 켜지는 순간, 복도 뒤편의 눈이 당신을 찾습니다.</p>
-        <div class="controls" id="controls"><div><strong>W A S D</strong>시점 기준 이동</div><div><strong>MOUSE</strong>둘러보기</div><div><strong>SHIFT</strong>달리기</div><div><strong>G</strong>중력 파동 / 관찰자 교란</div><div><strong>E</strong>사용 / 회수 / 출구</div><div><strong>시선</strong>관찰자에게서 눈 돌리기</div><div><strong>ESC</strong>일시정지</div></div>
-        <div class="touch-help">왼쪽 패드 이동 · 오른쪽 드래그로 시점 조작 · RUN을 누른 채 이동하면 달립니다. 관찰자를 볼 때는 시선을 돌리세요.</div>
+        <p class="story" id="screenStory">학교·아파트·지하 설비 구역을 지나 중계기를 복구하고 기억 조각을 회수하세요. 신호가 켜지면 맵 밖 거대한 눈이 깨어납니다. 눈이 감겼을 때 이동하고, 떴을 때는 멈추거나 은신하세요.</p>
+        <div class="controls" id="controls"><div><strong>W A S D</strong>시점 기준 이동</div><div><strong>MOUSE</strong>둘러보기</div><div><strong>SHIFT</strong>달리기</div><div><strong>C</strong>은신 자세 전환</div><div><strong>G</strong>중력 파동 / 감지 낮추기</div><div><strong>E</strong>사용 / 회수 / 출구</div><div><strong>ESC</strong>일시정지</div></div>
+        <div class="touch-help">눈이 감겼을 때 이동하세요. 눈이 떠지면 멈추거나 C / HIDE로 천천히 은신하세요.</div>
         <button class="start" id="start"><span>탐사 시작</span><span>↗</span></button>
         <div class="footnote" id="footnote">권장: 헤드폰 착용&nbsp; / &nbsp;화면을 클릭하면 포인터가 잠깁니다</div>
       </div>
@@ -146,7 +148,6 @@
     scene.background = new THREE.Color(0x101719);
     scene.fog = new THREE.FogExp2(0x101719, 0.022);
     const camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, 0.1, 115);
-    const gazeTarget = new THREE.Vector3(), gazeDirection = new THREE.Vector3(), cameraDirection = new THREE.Vector3();
     const pixelRatioCap = Math.min(devicePixelRatio || 1, touchMode ? 1.1 : 1.35);
     const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
     renderer.setPixelRatio(pixelRatioCap);
@@ -182,6 +183,7 @@
       anomaly: new THREE.MeshStandardMaterial({ color: 0x8fffea, emissive: 0x39f5dc, emissiveIntensity: 2.7, roughness: .18, metalness: .42 }),
       entity: new THREE.MeshStandardMaterial({ color:0x090c12, roughness:.94, metalness:.04 }),
       entityGlow: new THREE.MeshBasicMaterial({ color:0xff365c }),
+      portalDark: new THREE.MeshBasicMaterial({ color:0x030407, transparent:true, opacity:.96, side:THREE.DoubleSide, depthWrite:false }),
       relay: new THREE.MeshStandardMaterial({ color:0x5d827d, emissive:0x173b38, emissiveIntensity:.8, metalness:.5, roughness:.3 }),
       ghost: new THREE.MeshStandardMaterial({ color: 0x1e2530, emissive: 0x273d50, emissiveIntensity: .35, roughness: 1, transparent: true, opacity: .92 })
     };
@@ -193,12 +195,14 @@
     const segments = new Map();
     const anomalies = [];
     const relays = [];
+    const observerWindows = [];
     const SEG = 22, WIDTH = 10, HEIGHT = 6, MAX_SEGMENT = 33;
     const player = { x: 0, y: 1.62, z: 0, yaw: 0, pitch: 0, vy: 0, gravity: -1, grounded: true, speed: 4.3 };
     const collectedMemoryIndices = new Set();
     const activatedRelayIndices = new Set();
     const relaySegments = [3, 7, 11];
     const memorySegments = new Set([13, 15, 17, 19, 21, 23, 25, 27, 29, 31]);
+    const eyeWindowSegments = [3, 7, 11, 15, 19, 23, 27, 31];
     const saveKey = 'reality-exe-field-record-07';
     let savedProgress = null;
     try {
@@ -212,7 +216,8 @@
     } catch { savedProgress = null; }
     if (touchMode) { root.classList.add('touch-mode'); $('controls').style.display = 'none'; }
     let running = false, locked = false, gameOver = false, fragments = collectedMemoryIndices.size, exitPortal = null, exitIndex = Number.isInteger(savedProgress?.exitIndex) ? savedProgress.exitIndex : null, toastTimer = 0;
-    let health = 3, stamina = 100, exposure = 0, entityActive = false, entityStunnedUntil = 0, lastEntityHit = -Infinity, lastStaminaDisplay = -1, lastAlertAt = 0, safeHealTimer = 0;
+    let health = 3, stamina = 100, exposure = 0, entityActive = false, eyeOpen = false, eyeCycleStarted = 0, eyeTargetZ = 0, openEyeGroup = null, closedEyeGroup = null, lastEntityHit = -Infinity, lastStaminaDisplay = -1, safeHealTimer = 0;
+    let stealthMode = false, playerMovementSpeed = 0;
     let gravityRevertAt = 0, gravityCooldownUntil = 0;
     const keys = new Set();
     let lastFrame = performance.now(), frameSampleTime = 0, frameSampleCount = 0, footstepTime = 0, wasSafeHall = false;
@@ -345,70 +350,89 @@
       return record;
     }
     function buildEntity() {
-      const socket = new THREE.Mesh(new THREE.TorusGeometry(1.18, .12, 7, 28), mats.entity); socket.position.y = 1.8; entityRoot.add(socket);
+      entityRoot.scale.setScalar(3);
+      entityRoot.rotation.y = -Math.PI / 2;
+      const eyeModel = new THREE.Group(); eyeModel.position.y = -1.8; entityRoot.add(eyeModel);
+      const socket = new THREE.Mesh(new THREE.TorusGeometry(1.18, .12, 7, 28), mats.entity); socket.position.y = 1.8; eyeModel.add(socket);
+      openEyeGroup = new THREE.Group(); eyeModel.add(openEyeGroup);
+      closedEyeGroup = new THREE.Group(); closedEyeGroup.visible = false; eyeModel.add(closedEyeGroup);
       const sclera = new THREE.Mesh(new THREE.SphereGeometry(1.02, 18, 12), new THREE.MeshStandardMaterial({ color:0xd8d6cc, roughness:.38, emissive:0x271d20, emissiveIntensity:.22 }));
-      sclera.scale.set(1.14, .83, .62); sclera.position.set(0,1.8,0); entityRoot.add(sclera);
+      sclera.scale.set(1.14, .83, .62); sclera.position.set(0,1.8,0); openEyeGroup.add(sclera);
       const irisMat = new THREE.MeshStandardMaterial({ color:0xb01f3d, emissive:0x69091d, emissiveIntensity:1.15, roughness:.3 });
-      const iris = new THREE.Mesh(new THREE.SphereGeometry(.46, 14, 10), irisMat); iris.scale.set(1,.95,.36); iris.position.set(0,1.8,.59); entityRoot.add(iris);
-      const pupil = new THREE.Mesh(new THREE.SphereGeometry(.22, 12, 8), new THREE.MeshBasicMaterial({ color:0x08070b })); pupil.scale.set(.76,1,.42); pupil.position.set(0,1.8,.75); entityRoot.add(pupil);
-      const glint = new THREE.Mesh(new THREE.SphereGeometry(.075, 8, 6), new THREE.MeshBasicMaterial({ color:0xffffff })); glint.position.set(-.11,1.98,.82); entityRoot.add(glint);
+      const iris = new THREE.Mesh(new THREE.SphereGeometry(.46, 14, 10), irisMat); iris.scale.set(1,.95,.36); iris.position.set(0,1.8,.59); openEyeGroup.add(iris);
+      const pupil = new THREE.Mesh(new THREE.SphereGeometry(.22, 12, 8), new THREE.MeshBasicMaterial({ color:0x08070b })); pupil.scale.set(.76,1,.42); pupil.position.set(0,1.8,.75); openEyeGroup.add(pupil);
+      const glint = new THREE.Mesh(new THREE.SphereGeometry(.075, 8, 6), new THREE.MeshBasicMaterial({ color:0xffffff })); glint.position.set(-.11,1.98,.82); openEyeGroup.add(glint);
+      const satelliteMat = new THREE.MeshStandardMaterial({ color:0x521726, emissive:0x8f1833, emissiveIntensity:.7, roughness:.45 });
+      const lid = new THREE.Mesh(new THREE.SphereGeometry(1.02, 16, 10), satelliteMat); lid.scale.set(1.14,.83,.62); lid.position.set(0,1.8,.02); closedEyeGroup.add(lid);
+      meshBox(closedEyeGroup, mats.entityGlow, 0,1.8,.66,1.52,.045,.035);
+      const upperLid = new THREE.Mesh(new THREE.TorusGeometry(.76,.055,6,24,Math.PI), mats.entityGlow); upperLid.position.set(0,1.8,.68); closedEyeGroup.add(upperLid);
+      const lowerLid = new THREE.Mesh(new THREE.TorusGeometry(.76,.055,6,24,Math.PI), mats.entityGlow); lowerLid.position.set(0,1.8,.68); lowerLid.rotation.z = Math.PI; closedEyeGroup.add(lowerLid);
       const veinMat = new THREE.MeshStandardMaterial({ color:0x5b2531, roughness:.8 });
       for (let i=0;i<6;i++) {
         const side = i%2 ? 1 : -1, y = 1.2 + (i%3)*.34;
         const vein = new THREE.Mesh(new THREE.CylinderGeometry(.025,.075,.9,5), veinMat);
-        vein.position.set(side*(.92 + (i%2)*.12), y, -.12); vein.rotation.z = side * (.68 + (i%3)*.16); vein.rotation.x = side * .2; entityRoot.add(vein);
+        vein.position.set(side*(.92 + (i%2)*.12), y, -.12); vein.rotation.z = side * (.68 + (i%3)*.16); vein.rotation.x = side * .2; eyeModel.add(vein);
       }
       for (const side of [-1,1]) {
         const satellite = new THREE.Mesh(new THREE.SphereGeometry(.16,8,6), mats.entityGlow);
-        satellite.position.set(side*.96,1.16,.28); entityRoot.add(satellite);
+        satellite.position.set(side*.96,1.16,.28); openEyeGroup.add(satellite);
       }
+    }
+    function nearestEyeWindow(segment) {
+      return eyeWindowSegments.reduce((best, index) => Math.abs(index-segment) < Math.abs(best-segment) ? index : best, eyeWindowSegments[0]);
+    }
+    function setEntityEyeOpen(open, firstWake = false) {
+      eyeOpen = open;
+      if (openEyeGroup) openEyeGroup.visible = open;
+      if (closedEyeGroup) closedEyeGroup.visible = !open;
+      soundEffect('alert');
+      showToast(firstWake ? '세 번째 중계기 신호 — 맵 밖의 거대한 눈이 열렸습니다' : open ? '관찰자가 눈을 떴습니다 — 멈추거나 C로 은신하세요' : '관찰자가 눈을 감았습니다 — 지금 이동하세요');
     }
     function activateEntity() {
       if (entityActive) return;
-      entityActive = true; entityRoot.visible = true; entityRoot.position.set(0, 0, player.z + 42);
-      root.classList.add('entity-active'); soundEffect('alert'); showToast('중계기 신호에 반응 — 관찰자가 깨어났습니다');
+      entityActive = true; eyeCycleStarted = performance.now();
+      eyeTargetZ = -nearestEyeWindow(Math.max(0,Math.floor(-player.z/SEG))) * SEG - SEG/2;
+      entityRoot.visible = true; entityRoot.position.set(14.2,3,eyeTargetZ);
+      for (const window of observerWindows) window.visible = false;
+      root.classList.add('entity-active'); setEntityEyeOpen(true,true);
     }
     function isSanctuarySegment(index) { return index > 0 && (index % 8 === 0 || index % 8 === 1); }
     function updateEntity(dt, now) {
       if (!entityActive || !running) return;
       const segment = Math.max(0, Math.floor(-player.z / SEG));
       const safeHall = isSanctuarySegment(segment);
+      const phase = (now - eyeCycleStarted) % 7800;
+      const shouldBeOpen = phase < 4700;
+      if (shouldBeOpen !== eyeOpen) {
+        setEntityEyeOpen(shouldBeOpen);
+        if (!shouldBeOpen) eyeTargetZ = -nearestEyeWindow(segment) * SEG - SEG/2;
+      }
+      if (!eyeOpen) {
+        const delta = eyeTargetZ - entityRoot.position.z;
+        entityRoot.position.z += Math.sign(delta) * Math.min(Math.abs(delta), 32 * dt);
+      }
       if (safeHall) {
-        if (Math.abs(entityRoot.position.z - player.z) < 28) entityRoot.position.z = player.z + 28;
         if (health < 3) {
           safeHealTimer += dt;
           if (safeHealTimer >= 8) { health++; safeHealTimer = 0; soundEffect('relay'); showToast('안정 구역에서 체력을 회복했습니다'); updateSurvivalHUD(); }
         } else safeHealTimer = 0;
-      } else if (now >= entityStunnedUntil) {
-        safeHealTimer = 0;
-        entityRoot.position.z += THREE.MathUtils.clamp(player.z - entityRoot.position.z, -1, 1) * 5.1 * dt;
-      }
-      entityRoot.position.x += THREE.MathUtils.clamp(player.x - entityRoot.position.x, -1.7 * dt, 1.7 * dt);
-      entityRoot.position.y = Math.sin(now * .0021) * .12;
-      entityRoot.rotation.y = Math.atan2(player.x - entityRoot.position.x, player.z - entityRoot.position.z);
-      entityRoot.rotation.z = Math.sin(now * .0017) * .045;
+      } else safeHealTimer = 0;
       const dx = entityRoot.position.x - player.x, dz = entityRoot.position.z - player.z;
       const distance = Math.hypot(dx, dz);
-      if (distance > 90) entityRoot.position.z = player.z + 72;
-      gazeTarget.set(entityRoot.position.x, entityRoot.position.y + 1.8, entityRoot.position.z);
-      gazeDirection.copy(gazeTarget).sub(camera.position);
-      const sightDistance = gazeDirection.length();
-      gazeDirection.normalize(); camera.getWorldDirection(cameraDirection);
-      const watching = !safeHall && now >= entityStunnedUntil && sightDistance < 58 && cameraDirection.dot(gazeDirection) > .84;
-      if (watching) exposure = Math.min(100, exposure + (player.gravity > 0 ? 8 : 14) * dt);
-      else exposure = Math.max(0, exposure - (safeHall ? 50 : 23) * dt);
-      root.classList.toggle('exposed', watching);
-      const alertVisible = !safeHall && (watching || distance < 26);
-      $('entityAlert').textContent = watching ? '관찰자 시선 감지 · 시야를 돌리세요' : '관찰자 접근 중';
+      const movingLoudly = eyeOpen && !safeHall && distance < 92 && playerMovementSpeed > .25;
+      if (movingLoudly) {
+        const noiseRate = playerMovementSpeed > 6 ? 40 : playerMovementSpeed > 2.4 ? 24 : 8;
+        exposure = Math.min(100, exposure + noiseRate * (stealthMode ? .22 : 1) * dt);
+      } else exposure = Math.max(0, exposure - (safeHall ? 55 : 38) * dt);
+      root.classList.toggle('exposed', movingLoudly && exposure > 35);
+      const alertVisible = !safeHall && distance < 110;
+      $('entityAlert').textContent = eyeOpen ? '눈을 떴습니다 · 멈추거나 은신하세요' : '눈을 감았습니다 · 이동 가능';
       $('entityAlert').classList.toggle('show', alertVisible);
-      if (!safeHall && distance < 25 && now - lastAlertAt > 6200) {
-        lastAlertAt = now; soundEffect('alert'); showToast('관찰자가 고개를 돌렸습니다 — 시선을 피하세요');
-      }
       if (exposure >= 100 && now - lastEntityHit > 2400) {
         lastEntityHit = now; health--; stamina = Math.max(0, stamina - 25); exposure = 34;
-        entityStunnedUntil = now + 1250; entityRoot.position.z += 8; soundEffect('hit');
+        soundEffect('hit');
         root.classList.add('damaged'); setTimeout(() => root.classList.remove('damaged'), 220);
-        showToast(health > 0 ? '시선 노출로 피해를 입었습니다 — 고개를 돌리세요' : '관찰자 시선에 잠식되었습니다');
+        showToast(health > 0 ? '움직임이 감지되어 피해를 입었습니다 — 멈추거나 은신하세요' : '관찰자에게 움직임을 들켰습니다');
         updateSurvivalHUD();
         if (health <= 0) { loseGame(); return; }
       }
@@ -420,7 +444,7 @@
       $('screenEyebrow').textContent = 'SIGNAL TERMINATED';
       $('screenTitle').innerHTML = 'YOU WERE <span>OBSERVED</span>';
       $('screenSubtitle').textContent = '복도 07 — 생존 실패';
-      $('screenStory').textContent = '관찰자의 시선에 오래 노출되어 신호가 끊겼습니다. 시선을 피하고 중력 파동을 활용해 다시 탐사하세요.';
+      $('screenStory').textContent = '눈이 떠진 동안 움직임을 들켜 신호가 끊겼습니다. 눈이 감길 때 이동하고, 눈이 떠지면 멈추거나 은신하세요.';
       $('controls').style.display = 'none'; $('start').querySelector('span').textContent = '다시 탐사'; $('footnote').textContent = 'FIELD RECORD 07 / SIGNAL LOST'; $('screen').classList.remove('hidden');
     }
     function createExit(parent, z) {
@@ -439,6 +463,7 @@
       const group = new THREE.Group(); group.position.z = -index * SEG; roomRoot.add(group);
       const zoneIndex = Math.floor(Math.max(0,index) / 8), isWideHall = index > 0 && (index % 8 === 0 || index % 8 === 1);
       const themeIndex = zoneIndex % 3;
+      const hasEyeWindow = eyeWindowSegments.includes(index);
       const places = ['SCHOOL / B WING', 'APARTMENT / FLOOR 13', 'SUBLEVEL / SERVICE'];
       const corridorWidth = isWideHall ? 18 : WIDTH, halfWidth = corridorWidth / 2;
       const accent = [mats.light, mats.violetLight, mats.amberLight][zoneIndex % 3];
@@ -447,7 +472,20 @@
       const floor = new THREE.Mesh(new THREE.PlaneGeometry(corridorWidth, SEG), themedFloor); floor.rotation.x = -Math.PI / 2; floor.position.set(0, 0, -SEG / 2); group.add(floor);
       const ceil = new THREE.Mesh(new THREE.PlaneGeometry(corridorWidth, SEG), mats.ceiling); ceil.rotation.x = Math.PI / 2; ceil.position.set(0, HEIGHT, -SEG / 2); group.add(ceil);
       meshBox(group, themedWall, -halfWidth, HEIGHT/2, -SEG/2, .35, HEIGHT, SEG);
-      meshBox(group, themedWall, halfWidth, HEIGHT/2, -SEG/2, .35, HEIGHT, SEG);
+      if (hasEyeWindow) {
+        const centerZ = -SEG/2, apertureWidth = 6.4, edgeA = centerZ + apertureWidth/2, edgeB = centerZ - apertureWidth/2;
+        meshBox(group, themedWall, halfWidth, HEIGHT/2, edgeA/2, .35, HEIGHT, Math.abs(edgeA));
+        meshBox(group, themedWall, halfWidth, HEIGHT/2, (edgeB-SEG)/2, .35, HEIGHT, SEG+edgeB);
+        meshBox(group, themedWall, halfWidth, .275, centerZ, .35, .55, apertureWidth);
+        meshBox(group, themedWall, halfWidth, 5.725, centerZ, .35, .55, apertureWidth);
+        const pane = new THREE.Mesh(new THREE.PlaneGeometry(apertureWidth-.12,4.8),mats.portalDark);
+        pane.position.set(halfWidth-.18,3,centerZ); pane.rotation.y=Math.PI/2; pane.visible=!entityActive; group.add(pane);
+        observerWindows.push(pane);
+        const frameX = halfWidth-.2;
+        for (const side of [-1,1]) meshBox(group,mats.violetLight,frameX,3,centerZ+side*(apertureWidth/2+.06),.12,5.05,.14);
+        meshBox(group,mats.violetLight,frameX,5.52,centerZ,.12,.13,apertureWidth+.25);
+        meshBox(group,mats.violetLight,frameX,.48,centerZ,.12,.13,apertureWidth+.25);
+      } else meshBox(group, themedWall, halfWidth, HEIGHT/2, -SEG/2, .35, HEIGHT, SEG);
       // Batch repeated corridor details into instanced meshes to keep draw calls low.
       const trimBoxes = [], darkBoxes = [], coolLightBoxes = [], redLightBoxes = [], violetLightBoxes = [], amberLightBoxes = [];
       const themeBodies = [], themeDetails = [], themeLights = [];
@@ -616,15 +654,17 @@
       player.gravity = 1; player.vy = 2.8; player.grounded = false;
       gravityRevertAt = now + 1450; gravityCooldownUntil = now + 3300;
       soundEffect('gravity');
-      let repelledEntity = false;
-      if (entityActive && Math.hypot(entityRoot.position.x-player.x, entityRoot.position.z-player.z) < 48) {
-        entityStunnedUntil = now + 3000;
-        entityRoot.position.z = Math.max(entityRoot.position.z, player.z + 16);
-        exposure = Math.max(0, exposure - 48);
-        repelledEntity = true;
-      }
-      showToast(repelledEntity ? '중력 파동 — 관찰자의 눈을 감췄습니다' : '중력 파동 — 천장으로 떠오릅니다');
+      if (entityActive) exposure = Math.max(0, exposure - 38);
+      showToast(entityActive ? '중력 파동 — 움직임 흔적이 흩어졌습니다' : '중력 파동 — 천장으로 떠오릅니다');
       updateHUD();
+    }
+    function toggleStealth() {
+      if (!running) return;
+      stealthMode = !stealthMode;
+      $('stealthTouch').classList.toggle('stealth-on', stealthMode);
+      $('stealthStatus').textContent = stealthMode ? 'HIDE / 은신 중' : '';
+      if (stealthMode) { touchInput.sprint = false; $('runTouch').classList.remove('active'); }
+      showToast(stealthMode ? '은신 자세 — 천천히 움직이면 감지가 줄어듭니다' : '은신 자세 해제');
     }
     if (touchMode) {
       const movePad = $('movePad'), moveStick = $('moveStick'), lookPad = $('lookPad');
@@ -649,6 +689,7 @@
       };
       movePad.addEventListener('pointerup', releaseMove);
       movePad.addEventListener('pointercancel', releaseMove);
+      $('stealthTouch').addEventListener('pointerdown', event => { event.preventDefault(); event.stopPropagation(); toggleStealth(); });
       lookPad.addEventListener('pointerdown', event => {
         if (!running) return;
         event.preventDefault(); lookPointer = event.pointerId; lookX = event.clientX; lookY = event.clientY; lookPad.setPointerCapture(lookPointer);
@@ -682,6 +723,7 @@
       if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(k)) event.preventDefault();
       if (!running || event.repeat) return;
       if (k === 'g') flipGravity();
+      if (k === 'c') toggleStealth();
       if (k === 'e') interact();
       if (k === 'p') pauseScreen();
       if (k === 'escape' && locked) document.exitPointerLock?.();
@@ -819,9 +861,10 @@
         const length = Math.hypot(forward, strafe) || 1;
         const f = forward / length, s = strafe / length;
         const moving = Math.hypot(forward, strafe) > .08;
-        const sprinting = (keys.has('shift') || touchInput.sprint) && moving && stamina > 0;
+        const sprinting = (keys.has('shift') || touchInput.sprint) && moving && stamina > 0 && !stealthMode;
         if (sprinting) stamina = Math.max(0, stamina - 31 * dt); else stamina = Math.min(100, stamina + 19 * dt);
-        const moveSpeed = sprinting ? player.speed * 1.72 : player.speed;
+        const moveSpeed = (sprinting ? player.speed * 1.72 : player.speed) * (stealthMode ? .46 : 1);
+        playerMovementSpeed = moving ? moveSpeed : 0;
         player.x += (Math.cos(player.yaw) * s - Math.sin(player.yaw) * f) * moveSpeed * dt;
         player.z += (-Math.sin(player.yaw) * s - Math.cos(player.yaw) * f) * moveSpeed * dt;
         const segmentIndex = Math.max(0, Math.floor(-player.z / SEG));
@@ -838,11 +881,11 @@
         if (player.y <= 1.62) { player.y = 1.62; if (player.gravity < 0) player.grounded = true; player.vy = Math.max(0, player.vy); }
         if (player.y >= 4.38) { player.y = 4.38; if (player.gravity > 0) player.grounded = true; player.vy = Math.min(0, player.vy); }
         const bob = moving && player.grounded ? Math.sin(now * (sprinting ? .019 : .012)) * (sprinting ? .075 : .035) : 0;
-        camera.position.set(player.x, player.y + bob, player.z);
+        camera.position.set(player.x, player.y - (stealthMode ? .3 : 0) + bob, player.z);
         camera.rotation.set(player.pitch, player.yaw, 0, 'YXZ');
         const targetFov = sprinting ? 78 : 72;
         if (Math.abs(camera.fov - targetFov) > .15) { camera.fov += (targetFov - camera.fov) * Math.min(1, dt * 5); camera.updateProjectionMatrix(); }
-        if (moving && player.grounded) {
+        if (moving && player.grounded && !stealthMode) {
           footstepTime += dt;
           if (footstepTime >= (sprinting ? .34 : .52)) { soundEffect('footstep'); footstepTime = 0; }
         } else footstepTime = .25;
