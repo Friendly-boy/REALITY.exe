@@ -40,6 +40,12 @@
     .progress { display:flex; justify-content:flex-end; gap:5px; margin-top:12px; }
     .progress i { width:17px; height:3px; background:rgba(255,255,255,.19); }
     .progress i.on { background:var(--cyan); box-shadow:0 0 9px rgba(138,245,228,.55); }
+    .exposure-meter { display:flex; align-items:center; justify-content:flex-end; gap:7px; margin-top:10px; color:#ff9aa8; font:8px ui-monospace,monospace; letter-spacing:.1em; opacity:.72; }
+    .exposure-track { width:78px; height:3px; background:rgba(255,255,255,.16); }
+    .exposure-track i { display:block; width:0; height:100%; background:#fa526c; box-shadow:0 0 8px rgba(250,82,108,.7); transition:width .18s; }
+    #game.entity-active .exposure-meter { opacity:1; }
+    #game.exposed .entity-alert { animation:eyePulse .8s ease-in-out infinite alternate; }
+    @keyframes eyePulse { from { opacity:.65; } to { opacity:1; text-shadow:0 0 24px #ff163f; } }
     .crosshair { position:absolute; left:50%; top:50%; width:19px; height:19px; transform:translate(-50%,-50%); opacity:.8; pointer-events:none; transition:transform .18s,opacity .18s; }
     .crosshair:before,.crosshair:after { content:""; position:absolute; background:rgba(237,247,241,.78); box-shadow:0 0 5px rgba(138,245,228,.6); }
     .crosshair:before { width:1px; height:19px; left:9px; top:0; }
@@ -107,12 +113,12 @@
       <div class="hud-block"><div class="hud-label">중력</div><div class="hud-value" id="gravity">↓ <span style="font-size:10px;color:#929a9b">FLOOR</span></div></div>
       <div class="hud-block"><div class="hud-label">생존 / 체력</div><div class="hud-value status-value" id="health">♥ ♥ ♥</div><div class="stamina-track"><i id="staminaBar"></i></div></div>
     </div>
-    <div class="objective"><div class="hud-label" id="missionLabel">임무 01 / 신호 복구</div><p id="objectiveText">신호 중계기 3개를 작동시키세요.</p><div class="progress" id="progress"><i></i><i></i><i></i><i></i><i></i></div></div>
-    <div class="crosshair" id="crosshair"></div><div class="hint" id="hint">[ E ] 상호작용</div><div class="toast" id="toast"></div><div class="entity-alert" id="entityAlert">관측자 접근 중</div>
+    <div class="objective"><div class="hud-label" id="missionLabel">임무 01 / 신호 복구</div><p id="objectiveText">신호 중계기 3개를 작동시키세요.</p><div class="progress" id="progress"><i></i><i></i><i></i><i></i><i></i></div><div class="exposure-meter"><span>관찰자 시선</span><span class="exposure-track"><i id="exposureBar"></i></span><span id="exposurePercent">0%</span></div></div>
+    <div class="crosshair" id="crosshair"></div><div class="hint" id="hint">[ E ] 상호작용</div><div class="toast" id="toast"></div><div class="entity-alert" id="entityAlert">관찰자 접근 중</div>
     <div class="touch-layer" id="touchLayer">
       <div class="look-pad" id="lookPad" aria-label="화면을 드래그해 둘러보기"></div>
       <div class="move-pad" id="movePad" aria-label="이동 조이스틱"><span class="move-caption">MOVE</span><span class="move-stick" id="moveStick"></span></div>
-      <div class="touch-actions"><button id="jumpTouch" aria-label="점프">JUMP</button><button id="gravityTouch" aria-label="중력 반전">GRAV</button><button id="interactTouch" aria-label="상호작용">USE</button><button id="runTouch" aria-label="달리기">RUN</button><button id="pauseTouch" aria-label="일시정지">PAUSE</button></div>
+      <div class="touch-actions"><button id="gravityTouch" aria-label="중력 파동">GRAV</button><button id="interactTouch" aria-label="상호작용">USE</button><button id="runTouch" aria-label="달리기">RUN</button><button id="pauseTouch" aria-label="일시정지">PAUSE</button></div>
     </div>
     <div class="grain"></div><div class="scanlines"></div><div class="vignette"></div><div class="damage-flash"></div>
     <section class="screen" id="screen">
@@ -121,9 +127,9 @@
         <div class="eyebrow" id="screenEyebrow">EXPLORATION PROTOCOL&nbsp; 01</div>
         <h1 id="screenTitle">REALITY<span>.exe</span></h1>
         <div class="subtitle" id="screenSubtitle">복도 07 — 중력이 기억을 잃은 곳</div>
-        <p class="story" id="screenStory">깊은 복도에서 중계기를 복구하고 기억 조각을 회수하세요. 신호가 켜지는 순간, 복도 뒤편의 무언가도 깨어납니다.</p>
-        <div class="controls" id="controls"><div><strong>W A S D</strong>이동</div><div><strong>MOUSE</strong>둘러보기</div><div><strong>SHIFT</strong>달리기</div><div><strong>SPACE</strong>점프</div><div><strong>G</strong>중력 반전 / 추격자 밀치기</div><div><strong>E</strong>사용 / 회수 / 출구</div><div><strong>ESC</strong>일시정지</div></div>
-        <div class="touch-help">왼쪽 패드 이동 · 오른쪽 드래그로 시점 조작 · RUN을 누른 채 이동하면 달립니다.</div>
+        <p class="story" id="screenStory">학교·아파트·지하 설비 구역을 지나 중계기를 복구하고 기억 조각을 회수하세요. 신호가 켜지는 순간, 복도 뒤편의 눈이 당신을 찾습니다.</p>
+        <div class="controls" id="controls"><div><strong>W A S D</strong>시점 기준 이동</div><div><strong>MOUSE</strong>둘러보기</div><div><strong>SHIFT</strong>달리기</div><div><strong>G</strong>중력 파동 / 관찰자 교란</div><div><strong>E</strong>사용 / 회수 / 출구</div><div><strong>시선</strong>관찰자에게서 눈 돌리기</div><div><strong>ESC</strong>일시정지</div></div>
+        <div class="touch-help">왼쪽 패드 이동 · 오른쪽 드래그로 시점 조작 · RUN을 누른 채 이동하면 달립니다. 관찰자를 볼 때는 시선을 돌리세요.</div>
         <button class="start" id="start"><span>탐사 시작</span><span>↗</span></button>
         <div class="footnote" id="footnote">권장: 헤드폰 착용&nbsp; / &nbsp;화면을 클릭하면 포인터가 잠깁니다</div>
       </div>
@@ -140,6 +146,7 @@
     scene.background = new THREE.Color(0x101719);
     scene.fog = new THREE.FogExp2(0x101719, 0.022);
     const camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, 0.1, 115);
+    const gazeTarget = new THREE.Vector3(), gazeDirection = new THREE.Vector3(), cameraDirection = new THREE.Vector3();
     const pixelRatioCap = Math.min(devicePixelRatio || 1, touchMode ? 1.1 : 1.35);
     const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
     renderer.setPixelRatio(pixelRatioCap);
@@ -159,6 +166,12 @@
       floor: new THREE.MeshStandardMaterial({ color: 0x343c3d, roughness: .84, metalness: .16 }),
       wall: new THREE.MeshStandardMaterial({ color: 0x343c39, roughness: .92, metalness: .07 }),
       ceiling: new THREE.MeshStandardMaterial({ color: 0x252d30, roughness: .9, metalness: .08 }),
+      schoolFloor: new THREE.MeshStandardMaterial({ color:0x394344, roughness:.88, metalness:.12 }),
+      schoolWall: new THREE.MeshStandardMaterial({ color:0x414b49, roughness:.9, metalness:.08 }),
+      apartmentFloor: new THREE.MeshStandardMaterial({ color:0x40383a, roughness:.86, metalness:.1 }),
+      apartmentWall: new THREE.MeshStandardMaterial({ color:0x504346, roughness:.9, metalness:.07 }),
+      sublevelFloor: new THREE.MeshStandardMaterial({ color:0x283337, roughness:.82, metalness:.22 }),
+      sublevelWall: new THREE.MeshStandardMaterial({ color:0x2c393c, roughness:.88, metalness:.18 }),
       trim: new THREE.MeshStandardMaterial({ color: 0x747974, roughness: .57, metalness: .35 }),
       dark: new THREE.MeshStandardMaterial({ color: 0x171c1d, roughness: .72, metalness: .2 }),
       light: new THREE.MeshStandardMaterial({ color: 0xa9fff0, emissive: 0x5df2d5, emissiveIntensity: 2.4 }),
@@ -199,7 +212,8 @@
     } catch { savedProgress = null; }
     if (touchMode) { root.classList.add('touch-mode'); $('controls').style.display = 'none'; }
     let running = false, locked = false, gameOver = false, fragments = collectedMemoryIndices.size, exitPortal = null, exitIndex = Number.isInteger(savedProgress?.exitIndex) ? savedProgress.exitIndex : null, toastTimer = 0;
-    let health = 3, stamina = 100, entityActive = false, entityStunnedUntil = 0, lastEntityHit = -Infinity, lastStaminaDisplay = -1, lastAlertAt = 0, safeHealTimer = 0;
+    let health = 3, stamina = 100, exposure = 0, entityActive = false, entityStunnedUntil = 0, lastEntityHit = -Infinity, lastStaminaDisplay = -1, lastAlertAt = 0, safeHealTimer = 0;
+    let gravityRevertAt = 0, gravityCooldownUntil = 0;
     const keys = new Set();
     let lastFrame = performance.now(), frameSampleTime = 0, frameSampleCount = 0, footstepTime = 0, wasSafeHall = false;
     let displayedDepth = -1, proximityTime = 0, lastHint = '';
@@ -261,7 +275,7 @@
     function soundEffect(kind) {
       if (!audioContext || !sfxBus) return;
       const now = audioContext.currentTime;
-      const patterns = { relay:[330, 494, 660], pickup:[440, 587, 880], gravity:[220, 110], jump:[180], hit:[92, 62], alert:[196, 146], footstep:[72] };
+      const patterns = { relay:[330, 494, 660], pickup:[440, 587, 880], gravity:[220, 110], hit:[92, 62], alert:[196, 146], footstep:[72] };
       const pattern = patterns[kind] || [220];
       pattern.forEach((frequency, index) => {
         const oscillator = audioContext.createOscillator(), envelope = audioContext.createGain(), start = now + index * .09;
@@ -331,20 +345,28 @@
       return record;
     }
     function buildEntity() {
-      const robe = new THREE.Mesh(new THREE.ConeGeometry(.72, 2.2, 7), mats.entity); robe.position.y = 1.12; entityRoot.add(robe);
-      const torso = new THREE.Mesh(new THREE.BoxGeometry(.72, 1.15, .48), mats.entity); torso.position.set(0, 1.55, 0); entityRoot.add(torso);
-      const head = new THREE.Mesh(new THREE.SphereGeometry(.34, 8, 6), mats.entity); head.position.set(0, 2.28, .03); entityRoot.add(head);
-      for (const side of [-1, 1]) {
-        const eye = new THREE.Mesh(new THREE.SphereGeometry(.065, 6, 5), mats.entityGlow); eye.position.set(side * .13, 2.31, .32); entityRoot.add(eye);
-        const arm = new THREE.Mesh(new THREE.BoxGeometry(.16, 1.38, .17), mats.entity); arm.position.set(side * .48, 1.42, .05); arm.rotation.z = side * -.12; entityRoot.add(arm);
+      const socket = new THREE.Mesh(new THREE.TorusGeometry(1.18, .12, 7, 28), mats.entity); socket.position.y = 1.8; entityRoot.add(socket);
+      const sclera = new THREE.Mesh(new THREE.SphereGeometry(1.02, 18, 12), new THREE.MeshStandardMaterial({ color:0xd8d6cc, roughness:.38, emissive:0x271d20, emissiveIntensity:.22 }));
+      sclera.scale.set(1.14, .83, .62); sclera.position.set(0,1.8,0); entityRoot.add(sclera);
+      const irisMat = new THREE.MeshStandardMaterial({ color:0xb01f3d, emissive:0x69091d, emissiveIntensity:1.15, roughness:.3 });
+      const iris = new THREE.Mesh(new THREE.SphereGeometry(.46, 14, 10), irisMat); iris.scale.set(1,.95,.36); iris.position.set(0,1.8,.59); entityRoot.add(iris);
+      const pupil = new THREE.Mesh(new THREE.SphereGeometry(.22, 12, 8), new THREE.MeshBasicMaterial({ color:0x08070b })); pupil.scale.set(.76,1,.42); pupil.position.set(0,1.8,.75); entityRoot.add(pupil);
+      const glint = new THREE.Mesh(new THREE.SphereGeometry(.075, 8, 6), new THREE.MeshBasicMaterial({ color:0xffffff })); glint.position.set(-.11,1.98,.82); entityRoot.add(glint);
+      const veinMat = new THREE.MeshStandardMaterial({ color:0x5b2531, roughness:.8 });
+      for (let i=0;i<6;i++) {
+        const side = i%2 ? 1 : -1, y = 1.2 + (i%3)*.34;
+        const vein = new THREE.Mesh(new THREE.CylinderGeometry(.025,.075,.9,5), veinMat);
+        vein.position.set(side*(.92 + (i%2)*.12), y, -.12); vein.rotation.z = side * (.68 + (i%3)*.16); vein.rotation.x = side * .2; entityRoot.add(vein);
       }
-      const lowerEye = new THREE.Mesh(new THREE.SphereGeometry(.035, 5, 4), mats.entityGlow); lowerEye.position.set(0, 1.94, .3); entityRoot.add(lowerEye);
-      entityRoot.scale.set(.95, 1, .7);
+      for (const side of [-1,1]) {
+        const satellite = new THREE.Mesh(new THREE.SphereGeometry(.16,8,6), mats.entityGlow);
+        satellite.position.set(side*.96,1.16,.28); entityRoot.add(satellite);
+      }
     }
     function activateEntity() {
       if (entityActive) return;
       entityActive = true; entityRoot.visible = true; entityRoot.position.set(0, 0, player.z + 42);
-      soundEffect('alert'); showToast('중계기 신호에 반응 — 관측자가 깨어났습니다');
+      root.classList.add('entity-active'); soundEffect('alert'); showToast('중계기 신호에 반응 — 관찰자가 깨어났습니다');
     }
     function isSanctuarySegment(index) { return index > 0 && (index % 8 === 0 || index % 8 === 1); }
     function updateEntity(dt, now) {
@@ -363,29 +385,42 @@
       }
       entityRoot.position.x += THREE.MathUtils.clamp(player.x - entityRoot.position.x, -1.7 * dt, 1.7 * dt);
       entityRoot.position.y = Math.sin(now * .0021) * .12;
+      entityRoot.rotation.y = Math.atan2(player.x - entityRoot.position.x, player.z - entityRoot.position.z);
       entityRoot.rotation.z = Math.sin(now * .0017) * .045;
       const dx = entityRoot.position.x - player.x, dz = entityRoot.position.z - player.z;
       const distance = Math.hypot(dx, dz);
       if (distance > 90) entityRoot.position.z = player.z + 72;
+      gazeTarget.set(entityRoot.position.x, entityRoot.position.y + 1.8, entityRoot.position.z);
+      gazeDirection.copy(gazeTarget).sub(camera.position);
+      const sightDistance = gazeDirection.length();
+      gazeDirection.normalize(); camera.getWorldDirection(cameraDirection);
+      const watching = !safeHall && now >= entityStunnedUntil && sightDistance < 58 && cameraDirection.dot(gazeDirection) > .84;
+      if (watching) exposure = Math.min(100, exposure + (player.gravity > 0 ? 8 : 14) * dt);
+      else exposure = Math.max(0, exposure - (safeHall ? 50 : 23) * dt);
+      root.classList.toggle('exposed', watching);
+      const alertVisible = !safeHall && (watching || distance < 26);
+      $('entityAlert').textContent = watching ? '관찰자 시선 감지 · 시야를 돌리세요' : '관찰자 접근 중';
+      $('entityAlert').classList.toggle('show', alertVisible);
       if (!safeHall && distance < 25 && now - lastAlertAt > 6200) {
-        lastAlertAt = now; soundEffect('alert'); showToast('뒤에서 발소리가 가까워집니다');
+        lastAlertAt = now; soundEffect('alert'); showToast('관찰자가 고개를 돌렸습니다 — 시선을 피하세요');
       }
-      $('entityAlert').classList.toggle('show', !safeHall && distance < 26);
-      if (!safeHall && distance < 2.45 && now - lastEntityHit > 2700) {
-        lastEntityHit = now; health--; stamina = Math.max(0, stamina - 25); soundEffect('hit');
-        root.classList.add('damaged'); setTimeout(() => root.classList.remove('damaged'), 180);
-        showToast(health > 0 ? '관측자에게 붙잡혔습니다 — 중력 반전으로 밀쳐내세요' : '관측자에게 붙잡혔습니다');
+      if (exposure >= 100 && now - lastEntityHit > 2400) {
+        lastEntityHit = now; health--; stamina = Math.max(0, stamina - 25); exposure = 34;
+        entityStunnedUntil = now + 1250; entityRoot.position.z += 8; soundEffect('hit');
+        root.classList.add('damaged'); setTimeout(() => root.classList.remove('damaged'), 220);
+        showToast(health > 0 ? '시선 노출로 피해를 입었습니다 — 고개를 돌리세요' : '관찰자 시선에 잠식되었습니다');
         updateSurvivalHUD();
         if (health <= 0) { loseGame(); return; }
-        entityRoot.position.z = player.z + 23;
       }
+      if (exposure < 0.5) exposure = 0;
+      updateSurvivalHUD();
     }
     function loseGame() {
       gameOver = true; running = false; document.exitPointerLock?.();
       $('screenEyebrow').textContent = 'SIGNAL TERMINATED';
       $('screenTitle').innerHTML = 'YOU WERE <span>OBSERVED</span>';
       $('screenSubtitle').textContent = '복도 07 — 생존 실패';
-      $('screenStory').textContent = '관측자는 신호가 끊긴 뒤에도 복도를 떠나지 않았습니다. 다시 탐사해 중계기부터 복구하세요.';
+      $('screenStory').textContent = '관찰자의 시선에 오래 노출되어 신호가 끊겼습니다. 시선을 피하고 중력 파동을 활용해 다시 탐사하세요.';
       $('controls').style.display = 'none'; $('start').querySelector('span').textContent = '다시 탐사'; $('footnote').textContent = 'FIELD RECORD 07 / SIGNAL LOST'; $('screen').classList.remove('hidden');
     }
     function createExit(parent, z) {
@@ -403,14 +438,19 @@
       if (segments.has(index)) return segments.get(index);
       const group = new THREE.Group(); group.position.z = -index * SEG; roomRoot.add(group);
       const zoneIndex = Math.floor(Math.max(0,index) / 8), isWideHall = index > 0 && (index % 8 === 0 || index % 8 === 1);
+      const themeIndex = zoneIndex % 3;
+      const places = ['SCHOOL / B WING', 'APARTMENT / FLOOR 13', 'SUBLEVEL / SERVICE'];
       const corridorWidth = isWideHall ? 18 : WIDTH, halfWidth = corridorWidth / 2;
       const accent = [mats.light, mats.violetLight, mats.amberLight][zoneIndex % 3];
-      const floor = new THREE.Mesh(new THREE.PlaneGeometry(corridorWidth, SEG), mats.floor); floor.rotation.x = -Math.PI / 2; floor.position.set(0, 0, -SEG / 2); group.add(floor);
+      const themedFloor = themeIndex===0 ? mats.schoolFloor : themeIndex===1 ? mats.apartmentFloor : mats.sublevelFloor;
+      const themedWall = themeIndex===0 ? mats.schoolWall : themeIndex===1 ? mats.apartmentWall : mats.sublevelWall;
+      const floor = new THREE.Mesh(new THREE.PlaneGeometry(corridorWidth, SEG), themedFloor); floor.rotation.x = -Math.PI / 2; floor.position.set(0, 0, -SEG / 2); group.add(floor);
       const ceil = new THREE.Mesh(new THREE.PlaneGeometry(corridorWidth, SEG), mats.ceiling); ceil.rotation.x = Math.PI / 2; ceil.position.set(0, HEIGHT, -SEG / 2); group.add(ceil);
-      meshBox(group, mats.wall, -halfWidth, HEIGHT/2, -SEG/2, .35, HEIGHT, SEG);
-      meshBox(group, mats.wall, halfWidth, HEIGHT/2, -SEG/2, .35, HEIGHT, SEG);
+      meshBox(group, themedWall, -halfWidth, HEIGHT/2, -SEG/2, .35, HEIGHT, SEG);
+      meshBox(group, themedWall, halfWidth, HEIGHT/2, -SEG/2, .35, HEIGHT, SEG);
       // Batch repeated corridor details into instanced meshes to keep draw calls low.
       const trimBoxes = [], darkBoxes = [], coolLightBoxes = [], redLightBoxes = [], violetLightBoxes = [], amberLightBoxes = [];
+      const themeBodies = [], themeDetails = [], themeLights = [];
       const trimX = halfWidth - .23;
       for (const side of [-1, 1]) {
         for (let k = 0; k < 3; k++) {
@@ -428,6 +468,36 @@
         lights.push({ x:lightX, y:5.76, z, sx:.22, sy:.07, sz:3.3 });
         trimBoxes.push({ x:0, y:.025, z, sx:corridorWidth-.45, sy:.05, sz:.045 });
       }
+      if (themeIndex === 0) {
+        // School wing: paired lockers with seams and handles.
+        for (const side of [-1,1]) for (let k=0;k<3;k++) {
+          const z = -3.2 - k*6.1, frontX = side*(halfWidth-1.05);
+          themeBodies.push({ x:side*(halfWidth-.58), y:1.35, z, sx:.88, sy:2.35, sz:1.78 });
+          for (const seam of [-.42,0,.42]) themeDetails.push({ x:frontX, y:1.35, z:z+seam, sx:.045, sy:2.16, sz:.035 });
+          themeLights.push({ x:frontX-side*.055, y:1.35, z:z+.27, sx:.06, sy:.09, sz:.09 });
+        }
+      } else if (themeIndex === 1) {
+        // Apartment floor: real door panels set into both corridor walls.
+        for (const side of [-1,1]) for (let k=0;k<2;k++) {
+          const z = -5.1 - k*10.4, x = side*(halfWidth-.24);
+          themeBodies.push({ x, y:1.52, z, sx:.13, sy:2.75, sz:1.55 });
+          themeDetails.push({ x:side*(halfWidth-.34), y:1.52, z:z-.82, sx:.12, sy:2.92, sz:.11 });
+          themeDetails.push({ x:side*(halfWidth-.34), y:1.52, z:z+.82, sx:.12, sy:2.92, sz:.11 });
+          themeDetails.push({ x:side*(halfWidth-.34), y:2.98, z, sx:.12, sy:.12, sz:1.75 });
+          themeLights.push({ x:side*(halfWidth-1.15), y:2.45, z:z+.43, sx:.07, sy:.08, sz:.07 });
+        }
+      } else {
+        // Sublevel: large pipes and warning lamps along both walls.
+        for (const side of [-1,1]) {
+          themeBodies.push({ x:side*(halfWidth-.42), y:5.1, z:-SEG/2, sx:.3, sy:.3, sz:SEG-1 });
+          themeBodies.push({ x:side*(halfWidth-.72), y:4.65, z:-SEG/2, sx:.2, sy:.18, sz:SEG-1 });
+          for (let k=0;k<3;k++) themeLights.push({ x:side*(halfWidth-1.02), y:.55, z:-3-k*6.4, sx:.08, sy:.44, sz:.26 });
+        }
+        for (let k=0;k<2;k++) themeDetails.push({ x:0, y:5.53, z:-5-k*10, sx:corridorWidth-1, sy:.16, sz:.2 });
+      }
+      addInstancedBoxes(group, themeIndex === 1 ? mats.red : mats.dark, themeBodies);
+      addInstancedBoxes(group, mats.trim, themeDetails);
+      addInstancedBoxes(group, themeIndex === 2 ? mats.redLight : themeIndex === 1 ? mats.amberLight : mats.light, themeLights);
       addInstancedBoxes(group, mats.trim, trimBoxes);
       addInstancedBoxes(group, mats.dark, darkBoxes);
       addInstancedBoxes(group, mats.light, coolLightBoxes);
@@ -442,20 +512,23 @@
         const sign = document.createElement('canvas'); sign.width = 512; sign.height = 96;
         const signCtx = sign.getContext('2d'); signCtx.fillStyle = '#07100f'; signCtx.fillRect(0,0,512,96);
         signCtx.strokeStyle = zoneIndex % 3 === 1 ? '#b89aff' : zoneIndex % 3 === 2 ? '#ffca75' : '#8af5e4'; signCtx.lineWidth = 2; signCtx.strokeRect(3,3,506,90);
-        signCtx.fillStyle = signCtx.strokeStyle; signCtx.font = 'bold 30px monospace'; signCtx.textAlign = 'center'; signCtx.fillText('SECTOR 0' + (zoneIndex + 1) + '  /  ' + ['THE NULL','THE STATIC','THE REDACTED'][zoneIndex % 3],256,59);
+        signCtx.fillStyle = signCtx.strokeStyle; signCtx.font = 'bold 24px monospace'; signCtx.textAlign = 'center'; signCtx.fillText('SECTOR 0' + (zoneIndex + 1) + '  /  ' + places[themeIndex],256,59);
         const signTexture = new THREE.CanvasTexture(sign);
         const signSprite = new THREE.Sprite(new THREE.SpriteMaterial({map:signTexture, transparent:true, depthWrite:false}));
         signSprite.scale.set(7.2,1.35,1); signSprite.position.set(0,4.8,-SEG*.52); group.add(signSprite);
       }
-      // Occasional impossible detail: a door hanging in the air.
-      if (index > 0 && index % 4 === 2) {
-        const x = seeded(index + 83) > .5 ? 3.1 : -3.1;
-        const door = new THREE.Group(); door.position.set(x, 1.8 + seeded(index + 5) * 1.3, -SEG * .64); group.add(door);
-        meshBox(door, mats.red, 0, 0, 0, 1.2, 2.8, .12);
-        meshBox(door, mats.trim, -.68, 0, 0, .12, 3.05, .22);
-        meshBox(door, mats.trim, .68, 0, 0, .12, 3.05, .22);
-        meshBox(door, mats.trim, 0, 1.48, 0, 1.45, .12, .22);
-        meshBox(door, mats.light, .35, -.1, .11, .06, .1, .08);
+      if (index > 0 && index % 8 === 0 && themeIndex === 1) {
+        // Apartment safe halls have a bank of mailboxes as a strong landmark.
+        meshBox(group, mats.dark, 0,1.45,-SEG*.48,3.8,2.5,.48);
+        for (let row=0;row<3;row++) for (let col=0;col<5;col++) {
+          const x=-1.45+col*.72, y=.72+row*.7;
+          meshBox(group,mats.trim,x,y,-SEG*.48-.255,.62,.58,.045);
+          meshBox(group,mats.amberLight,x+.19,y,-SEG*.48-.29,.035,.035,.025);
+        }
+      } else if (index > 0 && index % 8 === 0 && themeIndex === 2) {
+        // A service generator gives the sublevel's sanctuary its own silhouette.
+        meshBox(group,mats.dark,-5.6,1.45,-SEG*.48,1.05,2.8,2.5);
+        for (let row=0;row<4;row++) meshBox(group,row%2?mats.trim:mats.redLight,-5.05,.55+row*.56,-SEG*.48, .08,.13,1.9);
       }
       let anomaly = null;
       if (memorySegments.has(index)) anomaly = createAnomaly(index, group, -SEG * .66);
@@ -503,6 +576,10 @@
     }
     function updateSurvivalHUD() {
       $('health').textContent = Array.from({length:3}, (_,i) => i < health ? '♥' : '♡').join(' ');
+      const exposureValue = Math.max(0, Math.min(100, Math.round(exposure)));
+      $('exposureBar').style.width = exposureValue + '%';
+      $('exposurePercent').textContent = exposureValue + '%';
+      $('exposureBar').style.background = exposureValue >= 70 ? '#ff294c' : '#fa526c';
       const staminaValue = Math.max(0, Math.round(stamina));
       if (staminaValue !== lastStaminaDisplay) {
         lastStaminaDisplay = staminaValue;
@@ -533,20 +610,20 @@
     }
     $('start').addEventListener('click', startGame);
 
-    function jump() {
-      if (running && player.grounded) { player.vy = -player.gravity * 7.2; player.grounded = false; soundEffect('jump'); }
-    }
     function flipGravity() {
-      if (!running) return;
-      player.gravity *= -1; player.vy = player.gravity * 2.1; player.grounded = false;
+      const now = performance.now();
+      if (!running || now < gravityCooldownUntil) return;
+      player.gravity = 1; player.vy = 2.8; player.grounded = false;
+      gravityRevertAt = now + 1450; gravityCooldownUntil = now + 3300;
       soundEffect('gravity');
       let repelledEntity = false;
-      if (entityActive && Math.abs(entityRoot.position.z - player.z) < 18) {
-        entityStunnedUntil = performance.now() + 2600;
-        entityRoot.position.z = Math.max(entityRoot.position.z, player.z + 12);
+      if (entityActive && Math.hypot(entityRoot.position.x-player.x, entityRoot.position.z-player.z) < 48) {
+        entityStunnedUntil = now + 3000;
+        entityRoot.position.z = Math.max(entityRoot.position.z, player.z + 16);
+        exposure = Math.max(0, exposure - 48);
         repelledEntity = true;
       }
-      showToast(repelledEntity ? '중력 파동 — 관측자가 밀려났습니다' : player.gravity < 0 ? '중력 복귀 — 바닥이 아래에 있습니다' : '중력 반전 — 천장으로 이동합니다');
+      showToast(repelledEntity ? '중력 파동 — 관찰자의 눈을 감췄습니다' : '중력 파동 — 천장으로 떠오릅니다');
       updateHUD();
     }
     if (touchMode) {
@@ -583,7 +660,6 @@
       });
       const releaseLook = event => { if (event.pointerId === lookPointer) lookPointer = null; };
       lookPad.addEventListener('pointerup', releaseLook); lookPad.addEventListener('pointercancel', releaseLook);
-      $('jumpTouch').addEventListener('pointerdown', event => { event.preventDefault(); event.stopPropagation(); jump(); });
       $('gravityTouch').addEventListener('pointerdown', event => { event.preventDefault(); event.stopPropagation(); flipGravity(); });
       $('interactTouch').addEventListener('pointerdown', event => { event.preventDefault(); event.stopPropagation(); interact(); });
       const runButton = $('runTouch');
@@ -603,9 +679,8 @@
     });
     document.addEventListener('keydown', (event) => {
       const k = event.key.toLowerCase(); keys.add(k);
-      if ([' ', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(k)) event.preventDefault();
+      if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(k)) event.preventDefault();
       if (!running || event.repeat) return;
-      if (k === ' ') jump();
       if (k === 'g') flipGravity();
       if (k === 'e') interact();
       if (k === 'p') pauseScreen();
@@ -651,7 +726,7 @@
           '기록 1/5 — 복도는 걸을수록 길어지고 있다',
           '기록 2/5 — 불을 끄면 발소리가 멈춘다',
           '기록 3/5 — 벽 너머의 나는 나보다 빠르다',
-          '기록 4/5 — 관측자는 신호를 따라온다',
+          '기록 4/5 — 관찰자는 신호를 따라온다',
           '기록 5/5 — 마지막 기록의 이름은 당신이다'
         ];
         showToast(recoveredLines[Math.min(fragments - 1, recoveredLines.length - 1)]);
@@ -747,13 +822,16 @@
         const sprinting = (keys.has('shift') || touchInput.sprint) && moving && stamina > 0;
         if (sprinting) stamina = Math.max(0, stamina - 31 * dt); else stamina = Math.min(100, stamina + 19 * dt);
         const moveSpeed = sprinting ? player.speed * 1.72 : player.speed;
-        player.x += (Math.cos(player.yaw) * s + Math.sin(player.yaw) * f) * moveSpeed * dt;
-        player.z += (-Math.cos(player.yaw) * f + Math.sin(player.yaw) * s) * moveSpeed * dt;
+        player.x += (Math.cos(player.yaw) * s - Math.sin(player.yaw) * f) * moveSpeed * dt;
+        player.z += (-Math.sin(player.yaw) * s - Math.cos(player.yaw) * f) * moveSpeed * dt;
         const segmentIndex = Math.max(0, Math.floor(-player.z / SEG));
         const currentWidth = isSanctuarySegment(segmentIndex) ? 18 : WIDTH;
         player.x = THREE.MathUtils.clamp(player.x, -currentWidth / 2 + .95, currentWidth / 2 - .95);
         player.z = Math.min(1.5, player.z);
         player.z = Math.max(-SEG * (MAX_SEGMENT + 1) + 1.5, player.z);
+        if (player.gravity > 0 && now >= gravityRevertAt) {
+          player.gravity = -1; player.vy = -1.4; gravityRevertAt = 0; updateHUD();
+        }
         player.vy += player.gravity * 15 * dt;
         player.y += player.vy * dt;
         player.grounded = false;
@@ -772,7 +850,7 @@
         const safeHall = isSanctuarySegment(segmentIndex);
         if (safeHall !== wasSafeHall) {
           wasSafeHall = safeHall;
-          if (safeHall) showToast('안정 구역 — 관측자가 들어오지 못합니다');
+          if (safeHall) showToast('안정 구역 — 관찰자가 들어오지 못합니다');
           else if (entityActive) showToast('안정 신호를 벗어났습니다');
         }
         proximityTime += dt;
@@ -816,7 +894,7 @@
     if (savedProgress) {
       $('start').querySelector('span').textContent = '탐사 이어하기';
       $('footnote').textContent = 'CHECKPOINT AUTO-SAVED / FIELD RECORD 07';
-      $('screenStory').textContent = '마지막으로 복구한 신호 지점에서 탐사를 이어갑니다. 관측자가 아직 복도에 있습니다.';
+      $('screenStory').textContent = '마지막으로 복구한 신호 지점에서 탐사를 이어갑니다. 관찰자가 아직 복도에 있습니다.';
     }
   </script>
 </body>
