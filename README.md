@@ -27,14 +27,6 @@
 
 탐사 중 Web Audio로 생성한 앰비언트 음악과 효과음이 재생됩니다. 음악은 우측 상단 버튼으로 끌 수 있습니다. 브라우저 오디오 정책 때문에 첫 조작 뒤에 소리가 시작됩니다.
 
-## 실행
-
-`index.html`을 정적 웹 호스트에서 제공해 주세요. Three.js는 unpkg CDN에서 불러오므로 인터넷 연결이 필요합니다. GitHub Pages에서는 저장소의 **Settings → Pages → Deploy from a branch**에서 `main` 브랜치와 `/(root)`를 선택하면 웹에서 플레이할 수 있습니다.
-
-로컬에서는 PowerShell에서 게임 폴더로 이동해 `py -m http.server 8000`을 실행한 뒤 `http://localhost:8000`을 여세요.
-
-저사양 기기의 렉을 줄이기 위해 반복 오브젝트를 인스턴싱하고, 주변 구간만 유지하며, 렌더 해상도와 프레임률을 제한합니다. 화면 오른쪽 위에서 현재 FPS를 확인할 수 있습니다.
-
 ## 배포 저장소
 
 저장소: [Friendly-boy/REALITY.exe](https://github.com/Friendly-boy/REALITY.exe)
